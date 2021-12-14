@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ApiConfigService } from './shared/services';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import { MongoServerErrorFilter } from './filters/mongo-error-exception.filter';
 import { setupSwagger } from './swagger-setup';
+import { ApiConfigService } from './modules/shared/services';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
