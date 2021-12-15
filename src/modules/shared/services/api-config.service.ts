@@ -54,10 +54,7 @@ export class ApiConfigService {
 
   get mongoConfig() {
     return {
-      uri: `mongodb://${this.getString('MONGO_HOST')}:${this.getString('MONGO_PORT')}/`,
-      dbName: this.getString('MONGO_DATABASE'),
-      user: this.getString('MONGO_USERNAME'),
-      pass: this.getString('MONGO_PASSWORD'),
+      uri: this.getString('MONGODB_URI'),
     };
   }
 
