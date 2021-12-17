@@ -3,6 +3,7 @@ import { AutomapperModule } from '@automapper/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './modules/auth/auth.module';
 import { BalanceChangeModule } from './modules/balance-change/balance-change.module';
 import { GameInfoModule } from './modules/game-info/game-info.module';
 import { NftItemModule } from './modules/nft-item/nft-item.module';
@@ -33,6 +34,7 @@ import { UserModule } from './modules/user/user.module';
     NftItemModule,
     GameInfoModule,
     TreasuryModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

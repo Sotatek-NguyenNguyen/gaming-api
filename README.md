@@ -4,7 +4,7 @@
 
 ```
 // install husky to run lint and commitlint when commit code
-npx install husky
+npx husky install
 
 // install dependencies
 yarn

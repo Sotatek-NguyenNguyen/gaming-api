@@ -94,7 +94,7 @@ export class ApiConfigService {
     };
   }
 
-  get drowApiEndpoint() {
-    return this.getString('DROW_API_ENDPOINT');
+  get jwtSecret() {
+    return this.getString('JWT_SECRET');
   }
 }
