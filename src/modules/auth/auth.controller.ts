@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { GetSignatureMsgToLoginRequest, LoginRequest, LoginResponse } from './dto';
+import { GenerateAuthTokenTestingRequest, GetSignatureMsgToLoginRequest, LoginRequest, LoginResponse } from './dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -30,5 +30,10 @@ export class AuthController {
   @ApiOkResponse({ type: LoginResponse })
   adminLogin(@Body() dto: LoginRequest) {
     return this.authService.adminLogin(dto);
+  }
+
+  @Get('/generate-token')
+  generateAuthTokenTesting(@Body() dto: GenerateAuthTokenTestingRequest) {
+    if (process.env.NODE_ENV !== 'production') return this.authService.generateAuthTokenTesting(dto);
   }
 }
