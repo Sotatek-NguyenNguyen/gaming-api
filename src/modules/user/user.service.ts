@@ -2,9 +2,11 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { UserRole } from 'src/common/constant';
+import { generateRandomNumber } from 'src/common/utils';
 import { ApiConfigService } from '../shared/services';
+import { ListUserQuery, ListUserResponse, UserResponse } from './dto';
 import { User, UserDocument } from './user.schema';
 
 @Injectable()
@@ -14,6 +16,21 @@ export class UserService {
     readonly configService: ApiConfigService,
     @InjectMapper() readonly mapper: Mapper,
   ) {}
+
+  async list(filter: ListUserQuery): Promise<ListUserResponse> {
+    const { page, pageSize } = filter;
+    const query = this._getFilterQuery(filter);
+
+    const [data, total] = await Promise.all([this.model.find(query).lean({ virtuals: true }), this.model.count(query)]);
+
+    return {
+      data: this.mapper.mapArray(data, UserResponse, User),
+      page,
+      pageSize,
+      total,
+      pageCount: Math.ceil(total / pageSize),
+    };
+  }
 
   async checkUserExistByAddress(address: string) {
     const user = await this.getUserByAddress(address);
@@ -25,11 +42,20 @@ export class UserService {
     return user;
   }
 
-  create({ address, accountInGameId }: { address: string; accountInGameId: string | number }) {
+  create({
+    address,
+    accountInGameId,
+    balance,
+  }: {
+    address: string;
+    accountInGameId: string | number;
+    balance?: number;
+  }) {
     return this.model.create({
       address,
       accountInGameId,
-      nonce: 10,
+      balance,
+      nonce: generateRandomNumber(),
     });
   }
 
@@ -37,27 +63,36 @@ export class UserService {
     return this.model.findOne({ address }).lean({ virtuals: true });
   }
 
-  async getNonceByAddress(address: string) {
-    let user = await this.getUserByAddress(address);
-
-    if (!user) {
-      user = await this.create({ address, accountInGameId: 1 });
-    }
-
-    return user.nonce;
-  }
-
-  async generateNewNonce(userId: string) {
-    //
+  generateNewNonce(userId: string) {
+    return this.model.findOneAndUpdate(
+      { _id: userId },
+      {
+        nonce: generateRandomNumber(),
+      },
+    );
   }
 
   async isAdmin(address: string) {
     const admin = await this.model.findOne({ address, role: UserRole.Admin });
 
     if (!admin) {
-      throw new ForbiddenException('');
+      throw new ForbiddenException();
     }
 
     return admin;
+  }
+
+  _getFilterQuery({ address, accountInGameId }: ListUserQuery) {
+    const query: FilterQuery<UserDocument> = {};
+
+    if (address) {
+      query.address = address;
+    }
+
+    if (accountInGameId) {
+      query.accountInGameId = accountInGameId;
+    }
+
+    return query;
   }
 }

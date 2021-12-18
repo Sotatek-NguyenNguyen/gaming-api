@@ -8,7 +8,7 @@ import { GenerateAuthTokenTestingRequest, GetSignatureMsgToLoginRequest, LoginRe
 export class AuthController {
   constructor(readonly authService: AuthService) {}
 
-  @Get('signature-msg')
+  @Post('signature-msg')
   @ApiOperation({ operationId: 'getSignatureMessageToLogin', description: 'Get signature message to login' })
   getSignatureMessageToLogin(@Body() dto: GetSignatureMsgToLoginRequest) {
     return this.authService.getSignatureMessageToLogin(dto);
@@ -34,6 +34,6 @@ export class AuthController {
 
   @Get('/generate-token')
   generateAuthTokenTesting(@Body() dto: GenerateAuthTokenTestingRequest) {
-    if (process.env.NODE_ENV !== 'production') return this.authService.generateAuthTokenTesting(dto);
+    if (process.env.NODE_ENV !== 'production') return this.authService.generateAuthToken(dto);
   }
 }

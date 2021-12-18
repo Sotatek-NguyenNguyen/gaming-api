@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, IsNotEmpty } from 'class-validator';
+import { Allow, IsMongoId, IsNotEmpty } from 'class-validator';
 import { UserRole } from 'src/common/constant';
 import { IsEnum, IsString } from 'src/decorators/validators';
 
@@ -9,8 +9,8 @@ export class LoginRequest {
   address: string;
 
   @ApiProperty()
-  @IsString()
-  signature: string;
+  @Allow()
+  signature: Uint8Array;
 }
 
 export class LoginResponse {

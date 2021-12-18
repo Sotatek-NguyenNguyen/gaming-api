@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IJwtPayload } from 'src/common/interfaces';
 import { ApiConfigService } from '../shared/services';
 import { UserService } from '../user/user.service';
-import { GenerateAuthTokenTestingRequest, GetSignatureMsgToLoginRequest, LoginRequest } from './dto';
+import { GenerateAuthTokenTestingRequest, GetSignatureMsgToLoginRequest, LoginRequest, LoginResponse } from './dto';
+import nacl from 'tweetnacl';
+import { Base58 } from './base58';
+import { generateRandomNumber } from 'src/common/utils';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -13,31 +17,74 @@ export class AuthService {
   ) {}
 
   async getSignatureMessageToLogin({ address }: GetSignatureMsgToLoginRequest) {
-    const nonce = await this.userService.getNonceByAddress(address);
+    let user = await this.userService.getUserByAddress(address);
 
-    return { signatureMsg: `Please confirm to login: #${nonce}` };
+    if (!user) {
+      const { accountInGameId, balance } = await this.checkUserAddressHasGameAccount();
+
+      user = await this.userService.create({
+        address,
+        accountInGameId,
+        balance,
+      });
+    }
+
+    return { signatureMsg: this.generateSignatureMsgFromNonce(user.nonce) };
   }
 
-  async userLogin(dto: LoginRequest) {
-    // validate signature
-    // validate user exists of not
-    // const admin = await
-    // generate auth token and return
+  async userLogin(dto: LoginRequest): Promise<LoginResponse> {
+    const { address, signature } = dto;
 
-    return dto;
+    const user = await this.userService.checkUserExistByAddress(address);
+
+    this.validateSignature({ nonce: user.nonce, signature, address });
+
+    await this.userService.generateNewNonce(user.id);
+
+    return { accessToken: this.generateAuthToken({ address, role: user.role, userId: user.id }) };
   }
 
-  async adminLogin(dto: LoginRequest) {
-    // validate signature
+  async adminLogin(dto: LoginRequest): Promise<LoginResponse> {
+    const { address, signature } = dto;
 
-    // validate user is admin or not
-    // const admin = await this.userService.isAdmin(address);
-    // generate auth token and return
+    const user = await this.userService.isAdmin(address);
 
-    return dto;
+    this.validateSignature({ nonce: user.nonce, signature, address });
+
+    await this.userService.generateNewNonce(user.id);
+
+    return { accessToken: this.generateAuthToken({ address, role: user.role, userId: user.id }) };
   }
 
-  generateAuthTokenTesting(dto: GenerateAuthTokenTestingRequest) {
+  validateSignature({ nonce, signature, address }: { nonce: number; signature: Uint8Array; address: string }) {
+    const isValidSignature = nacl.sign.detached.verify(
+      new TextEncoder().encode(this.generateSignatureMsgFromNonce(nonce)),
+      Buffer.from(signature),
+      Base58.decode(address),
+    );
+
+    if (!isValidSignature) {
+      throw new BadRequestException('SIGNATURE_IS_NOT_VALID');
+    }
+  }
+
+  generateAuthToken(dto: GenerateAuthTokenTestingRequest) {
     return this.jwtService.sign(<IJwtPayload>{ sub: dto.userId, address: dto.address, role: dto.role });
+  }
+
+  async checkUserAddressHasGameAccount() {
+    // TODO: call to game server to validate user address and get accountInGameId
+    // expectedResponse
+    // {address, accountId, balance}
+
+    // if (!accountInGameId) {
+    //   throw new NotFoundException('GAME_ACCOUNT_ASSOCIATED_NOT_FOUND');
+    // }
+
+    return Promise.resolve({ accountInGameId: String(generateRandomNumber()), balance: 0 });
+  }
+
+  generateSignatureMsgFromNonce(nonce: number) {
+    return `Please confirm to login: #${nonce}`;
   }
 }

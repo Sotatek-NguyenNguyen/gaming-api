@@ -22,10 +22,10 @@ export class User extends BaseMongo {
   role?: UserRole;
 
   @Prop({ required: true })
-  @AutoMap()
   nonce: number;
 
   @Prop({ default: 0, min: 0 })
+  @AutoMap()
   balance: number;
 }
 

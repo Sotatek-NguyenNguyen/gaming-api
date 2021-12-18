@@ -97,4 +97,15 @@ export class ApiConfigService {
   get jwtSecret() {
     return this.getString('JWT_SECRET');
   }
+
+  get apiKey() {
+    return {
+      clientId: this.getString('API_CLIENT_ID'),
+      clientSecret: this.getString('API_CLIENT_SECRET'),
+    };
+  }
+
+  get walletAddress() {
+    return this.getString('WALLET_ADDRESS');
+  }
 }

@@ -1,10 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { MapInterceptor } from '@automapper/nestjs';
+import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { GetCurrentUserResponse } from './dto';
+import { GsAuthorize } from 'src/decorators/gs-authorize.decorator';
+import { UserResponse } from './dto';
+import { User } from './user.schema';
 import { UserService } from './user.service';
 
 @ApiTags('Game Server')
 @Controller('game-server')
+@GsAuthorize()
 export class GsBalanceController {
   constructor(readonly userService: UserService) {}
 
@@ -14,9 +18,10 @@ export class GsBalanceController {
     description: "Retrieve a particular address' current balance",
   })
   @ApiOkResponse({
-    type: GetCurrentUserResponse,
+    type: UserResponse,
   })
+  @UseInterceptors(MapInterceptor(UserResponse, User))
   gsGetAddressBalance(@Param('address') address: string) {
-    return address;
+    return this.userService.getUserByAddress(address);
   }
 }
