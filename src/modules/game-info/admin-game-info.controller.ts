@@ -1,13 +1,19 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import { MapInterceptor } from '@automapper/nestjs';
+import { Body, Controller, Get, Put, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UserRole } from 'src/common/constant';
 import { Authorize } from 'src/decorators';
 import { AdminGetGameInfoResponse, UpdateGameInfoRequest } from './dto';
+import { GameInfo } from './game-info.schema';
+import { GameInfoService } from './game-info.service';
 
 @ApiTags('Admin')
 @Controller('/admin/game-info')
+@Authorize(UserRole.Admin)
 export class AdminGameInfoController {
+  constructor(readonly gameInfoService: GameInfoService) {}
+
   @Get()
-  @Authorize()
   @ApiOperation({
     operationId: 'adminGetGameInfo',
     description: 'Admin Get Game Info',
@@ -15,12 +21,12 @@ export class AdminGameInfoController {
   @ApiOkResponse({
     type: AdminGetGameInfoResponse,
   })
+  @UseInterceptors(MapInterceptor(AdminGetGameInfoResponse, GameInfo))
   getGameInfo() {
-    //
+    return this.gameInfoService.get();
   }
 
   @Put()
-  @Authorize()
   @ApiOperation({
     operationId: 'updateGameInfo',
     description: 'Admin update game info',
@@ -28,7 +34,8 @@ export class AdminGameInfoController {
   @ApiOkResponse({
     type: AdminGetGameInfoResponse,
   })
+  @UseInterceptors(MapInterceptor(AdminGetGameInfoResponse, GameInfo))
   update(@Body() dto: UpdateGameInfoRequest) {
-    return dto;
+    return this.gameInfoService.update(dto);
   }
 }

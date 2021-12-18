@@ -1,10 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
+import { MapInterceptor } from '@automapper/nestjs';
+import { Controller, Get, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GameInfoBaseResponse } from './dto';
+import { GameInfo } from './game-info.schema';
+import { GameInfoService } from './game-info.service';
 
 @ApiTags('Public Api')
 @Controller('game-info')
 export class GameInfoController {
+  constructor(readonly gameInfoService: GameInfoService) {}
+
   @Get()
   @ApiOperation({
     operationId: 'getGameInfo',
@@ -13,7 +18,8 @@ export class GameInfoController {
   @ApiOkResponse({
     type: GameInfoBaseResponse,
   })
+  @UseInterceptors(MapInterceptor(GameInfoBaseResponse, GameInfo))
   getGameInfo() {
-    //
+    return this.gameInfoService.get();
   }
 }

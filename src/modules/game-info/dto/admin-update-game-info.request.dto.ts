@@ -46,8 +46,4 @@ export class UpdateGameInfoRequest {
   @ApiProperty({ example: 'Small Love Potion' })
   @IsString()
   currencyName: string;
-
-  @ApiProperty()
-  @IsString()
-  walletAddress: string;
 }
