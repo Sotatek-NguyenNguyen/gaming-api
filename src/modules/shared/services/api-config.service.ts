@@ -98,10 +98,11 @@ export class ApiConfigService {
     return this.getString('JWT_SECRET');
   }
 
-  get apiKey() {
+  // Game server key
+  get gsKey() {
     return {
-      clientId: this.getString('API_CLIENT_ID'),
-      clientSecret: this.getString('API_CLIENT_SECRET'),
+      accessKey: this.getString('GS_ACCESS_KEY'),
+      secretKey: this.getString('GS_SECRET_KEY'),
     };
   }
 

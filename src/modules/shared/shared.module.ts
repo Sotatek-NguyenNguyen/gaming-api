@@ -1,10 +1,10 @@
 import { Global, Module } from '@nestjs/common';
-import { ApiConfigService } from './services';
+import { ApiConfigService, GsHelperService } from './services';
 
 @Global()
 @Module({
   imports: [],
-  providers: [ApiConfigService],
-  exports: [ApiConfigService],
+  providers: [ApiConfigService, GsHelperService],
+  exports: [ApiConfigService, GsHelperService],
 })
 export class SharedModule {}
