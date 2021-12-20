@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'src/decorators/validators';
+import { IsArray, IsNumber, IsString } from 'src/decorators/validators';
 
 class SubmitBalanceChange {
   @ApiProperty()
@@ -12,7 +12,12 @@ class SubmitBalanceChange {
 }
 
 export class SubmitBalanceChangeRequest {
+  @ApiProperty()
+  @IsString()
+  requestId: string;
+
   @ApiProperty({ type: [SubmitBalanceChange] })
+  @IsArray({ nestedValidate: true, nestedType: SubmitBalanceChange })
   balanceChanges: SubmitBalanceChange[];
 }
 

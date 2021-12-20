@@ -1,11 +1,18 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsOptional } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/dto';
+import { IsEnum, IsString } from 'src/decorators/validators';
+import { BalanceChangeType } from '../balance-change.enum';
 
+// must be partial of BalanceChangeType
+// used only for validation and docs
 export enum TransactionType {
   Deposit = 'deposit',
   Withdrawn = 'withdrawn',
 }
 
+// must be partial of BalanceChangeType
+// used only for validation and docs
 export enum InGameBalanceChangeType {
   InGameIncrease = 'in_game_increase',
   InGameDecrease = 'in_game_decrease',
@@ -13,9 +20,13 @@ export enum InGameBalanceChangeType {
 
 export class ListUserTransactionHistoryQuery extends PaginationQueryDto {
   @ApiPropertyOptional({ example: '2021-12-13T14:46:45.044+07:00' })
+  @IsDateString()
+  @IsOptional()
   fromDate: Date;
 
   @ApiPropertyOptional({ example: '2021-12-13T14:46:45.044+07:00' })
+  @IsDateString()
+  @IsOptional()
   toDate: Date;
 
   @ApiPropertyOptional({
@@ -24,10 +35,33 @@ export class ListUserTransactionHistoryQuery extends PaginationQueryDto {
   transactionId: string;
 
   @ApiPropertyOptional({ enum: TransactionType })
-  type?: TransactionType;
+  type?: BalanceChangeType;
 }
 
 export class ListUserInGameBalanceChangeHistoryQuery extends PaginationQueryDto {
+  @ApiPropertyOptional({ example: '2021-12-13T14:46:45.044+07:00' })
+  @IsDateString()
+  @IsOptional()
+  fromDate: Date;
+
+  @ApiPropertyOptional({ example: '2021-12-13T14:46:45.044+07:00' })
+  @IsDateString()
+  @IsOptional()
+  toDate: Date;
+
   @ApiPropertyOptional({ enum: InGameBalanceChangeType })
-  type?: InGameBalanceChangeType;
+  @IsEnum({ optional: true, entity: InGameBalanceChangeType })
+  type?: BalanceChangeType;
+}
+
+export class AdminListUserTransactionHistoryQuery extends ListUserTransactionHistoryQuery {
+  @ApiPropertyOptional()
+  @IsString({ optional: true })
+  userAddress: string;
+}
+
+export class AdminListUserInGameBalanceChangeHistoryQuery extends ListUserInGameBalanceChangeHistoryQuery {
+  @ApiPropertyOptional()
+  @IsString({ optional: true })
+  userAddress: string;
 }

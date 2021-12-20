@@ -1,8 +1,10 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Authorize } from 'src/decorators';
+import { Authorize, GetUser, MapListInterceptor } from 'src/decorators';
+import { BalanceChange } from './balance-change.schema';
 import { BalanceChangeService } from './balance-change.service';
 import {
+  BalanceChangesResponse,
   ListBalanceChangesResponse,
   ListUserInGameBalanceChangeHistoryQuery,
   ListUserTransactionHistoryQuery,
@@ -10,11 +12,11 @@ import {
 
 @ApiTags('User')
 @Controller('my')
+@Authorize()
 export class MyBalanceChangeController {
   constructor(readonly balanceChangeService: BalanceChangeService) {}
 
   @Get('transactions')
-  @Authorize()
   @ApiOperation({
     operationId: 'getCurrentUserTransactionHistory',
     description: "Get current user's deposit & withdraw history",
@@ -22,12 +24,15 @@ export class MyBalanceChangeController {
   @ApiOkResponse({
     type: ListBalanceChangesResponse,
   })
-  getCurrentUserDepositHistory(@Query() query: ListUserTransactionHistoryQuery) {
-    return query;
+  @UseInterceptors(MapListInterceptor(BalanceChangesResponse, BalanceChange))
+  getCurrentUserTransactionHistory(
+    @Query() query: ListUserTransactionHistoryQuery,
+    @GetUser('address') userAddress: string,
+  ) {
+    return this.balanceChangeService.listTransactionHistory({ userAddress, ...query });
   }
 
   @Get('in-game-balances-changes')
-  @Authorize()
   @ApiOperation({
     operationId: 'getCurrentUserInGameBalanceChangeHistory',
     description: "Get current user's in-game balance change history",
@@ -35,7 +40,11 @@ export class MyBalanceChangeController {
   @ApiOkResponse({
     type: ListBalanceChangesResponse,
   })
-  getCurrentUserBalancesChanges(@Query() query: ListUserInGameBalanceChangeHistoryQuery) {
-    return query;
+  @UseInterceptors(MapListInterceptor(BalanceChangesResponse, BalanceChange))
+  getCurrentUserInGameBCHistory(
+    @Query() query: ListUserInGameBalanceChangeHistoryQuery,
+    @GetUser('address') userAddress: string,
+  ) {
+    return this.balanceChangeService.listInGameBcHistory({ userAddress, ...query });
   }
 }

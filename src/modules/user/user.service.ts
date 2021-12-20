@@ -2,7 +2,7 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { ClientSession, FilterQuery, Model } from 'mongoose';
 import { UserRole } from 'src/common/constant';
 import { generateRandomNumber } from 'src/common/utils';
 import { ApiConfigService } from '../shared/services';
@@ -21,7 +21,15 @@ export class UserService {
     const { page, pageSize } = filter;
     const query = this._getFilterQuery(filter);
 
-    const [data, total] = await Promise.all([this.model.find(query).lean({ virtuals: true }), this.model.count(query)]);
+    const [data, total] = await Promise.all([
+      this.model
+        .find(query)
+        .sort({ _id: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean({ virtuals: true }),
+      this.model.count(query),
+    ]);
 
     return {
       data: this.mapper.mapArray(data, UserResponse, User),
@@ -42,6 +50,16 @@ export class UserService {
     return user;
   }
 
+  async checkUsersExist(addresses: string[]) {
+    const users = await this.model.find({ address: { $in: addresses } });
+
+    if (users.length !== addresses.length) {
+      throw new NotFoundException('USERS_NOT_FOUND');
+    }
+
+    return users;
+  }
+
   create({
     address,
     accountInGameId,
@@ -57,6 +75,18 @@ export class UserService {
       balance,
       nonce: generateRandomNumber(),
     });
+  }
+
+  bulkUpdateUserBalanceByAddress(dto: { address: string; amount: number }[], session: ClientSession) {
+    return this.model.bulkWrite(
+      dto.map(({ address, amount }) => ({
+        updateOne: {
+          filter: { address },
+          update: { $inc: { amount } },
+        },
+      })),
+      { session },
+    );
   }
 
   getUserByAddress(address: string) {

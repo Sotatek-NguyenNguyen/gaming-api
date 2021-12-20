@@ -26,7 +26,6 @@ export class MyBalanceController {
   }
 
   @Post('withdrawals')
-  @Authorize()
   @ApiOperation({
     operationId: 'requestWithdraw',
     description: 'Request to perform a withdrawal',

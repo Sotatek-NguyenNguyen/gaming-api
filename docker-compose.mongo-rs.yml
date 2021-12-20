@@ -1,0 +1,44 @@
+version: '3.7'
+
+volumes:
+  mongo1_rs_vol: {}
+  mongo2_rs_vol: {}
+  mongo3_rs_vol: {}
+
+services:
+  mongo1:
+    container_name: mongo1
+    image: mongo:5.0.5
+    volumes:
+      - mongo1_rs_vol:/data/db
+      - ./rs-init.sh:/scripts/rs-init.sh
+    ports:
+      - 27017:27017
+    networks:
+      - mongo-rs-network
+    restart: always
+    command: ["--bind_ip_all", "--replSet", "mongo-rs" ]
+
+  mongo2:
+    container_name: mongo2
+    image: mongo:5.0.5
+    volumes:
+      - mongo2_rs_vol:/data/db
+    networks:
+      - mongo-rs-network
+    restart: always
+    command: ["--bind_ip_all", "--replSet", "mongo-rs" ]
+
+  mongo3:
+    container_name: mongo3
+    image: mongo:5.0.5
+    volumes:
+      - mongo3_rs_vol:/data/db
+    networks:
+      - mongo-rs-network
+    restart: always
+    command: ["--bind_ip_all", "--replSet", "mongo-rs" ]
+
+networks:
+  mongo-rs-network:
+    driver: bridge

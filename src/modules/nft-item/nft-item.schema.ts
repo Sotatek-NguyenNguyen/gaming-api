@@ -8,13 +8,13 @@ export type NftItemDocument = NftItem & Document;
 
 @BaseSchema()
 export class NftItem extends BaseMongo {
-  @Prop({ required: true, ref: 'User' })
-  userId: string;
+  @Prop({ required: true, index: true })
+  userAddress: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   referenceId: string;
 
-  @Prop()
+  @Prop({ index: true })
   address?: string;
 }
 

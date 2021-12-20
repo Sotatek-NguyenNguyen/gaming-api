@@ -3,7 +3,7 @@ import { BaseResponseDto } from 'src/common/dto';
 
 export class NftItemResponse extends BaseResponseDto {
   @ApiProperty()
-  userId: string;
+  userAddress: string;
 
   @ApiProperty()
   referenceId: string;

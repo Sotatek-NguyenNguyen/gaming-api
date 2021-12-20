@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiHeaderGsGet, ApiHeaderGsPost, MapListInterceptor } from 'src/decorators';
+import { BalanceChange } from './balance-change.schema';
 import { BalanceChangeService } from './balance-change.service';
 import {
+  BalanceChangesResponse,
   ListBalanceChangesResponse,
   ListUserInGameBalanceChangeHistoryQuery,
   ListUserTransactionHistoryQuery,
@@ -22,8 +25,12 @@ export class GsBalanceChangeController {
   @ApiOkResponse({
     type: ListBalanceChangesResponse,
   })
-  gsGetDepositsHistoryByAddress(@Param('address') address: string, @Query() query: ListUserTransactionHistoryQuery) {
-    return query;
+  @ApiHeaderGsGet()
+  gsGetTransactionHistoryByAddress(
+    @Param('address') userAddress: string,
+    @Query() query: ListUserTransactionHistoryQuery,
+  ) {
+    return this.balanceChangeService.listTransactionHistory({ userAddress, ...query });
   }
 
   @Get('addresses/:address/in-game-balances-changes')
@@ -34,11 +41,13 @@ export class GsBalanceChangeController {
   @ApiOkResponse({
     type: ListBalanceChangesResponse,
   })
+  @ApiHeaderGsGet()
+  @UseInterceptors(MapListInterceptor(BalanceChangesResponse, BalanceChange))
   gsGetInGameBalanceChangeHistoryByAddress(
-    @Param('address') address: string,
+    @Param('address') userAddress: string,
     @Query() query: ListUserInGameBalanceChangeHistoryQuery,
   ) {
-    return query;
+    return this.balanceChangeService.listInGameBcHistory({ userAddress, ...query });
   }
 
   @Post('balances-changes')
@@ -47,10 +56,12 @@ export class GsBalanceChangeController {
     description:
       'Submit the balance changes (can be multiple addresses at the same time). The changes will be atomic (all succeeded or all failed)',
   })
+  @ApiHeaderGsPost()
   @ApiOkResponse({
     type: SubmitBalanceChangeResponse,
   })
+  @UseInterceptors(MapListInterceptor(BalanceChangesResponse, BalanceChange))
   submitBalanceChanges(@Body() dto: SubmitBalanceChangeRequest) {
-    return dto;
+    return this.balanceChangeService.submitBalanceChanges(dto);
   }
 }

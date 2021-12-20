@@ -1,6 +1,7 @@
 import { MapInterceptor } from '@automapper/nestjs';
 import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiHeaderGsGet } from 'src/decorators';
 import { GsAuthorize } from 'src/decorators/gs-authorize.decorator';
 import { UserResponse } from './dto';
 import { User } from './user.schema';
@@ -20,6 +21,7 @@ export class GsBalanceController {
   @ApiOkResponse({
     type: UserResponse,
   })
+  @ApiHeaderGsGet()
   @UseInterceptors(MapInterceptor(UserResponse, User))
   gsGetAddressBalance(@Param('address') address: string) {
     return this.userService.getUserByAddress(address);

@@ -10,18 +10,20 @@ export type BalanceChangeDocument = BalanceChange & Document;
 
 @BaseSchema()
 export class BalanceChange extends BaseMongo {
-  @Prop({ required: true, ref: 'User' })
+  @Prop({ required: true, index: true })
   @AutoMap()
-  userId: string;
+  userAddress: string;
 
   @Prop({ required: true, min: 0 })
   @AutoMap()
   amount: number;
 
-  @Prop({ enum: BalanceChangeType, required: true })
+  @Prop({ enum: BalanceChangeType, required: true, index: true })
+  @AutoMap()
   type: BalanceChangeType;
 
-  @Prop()
+  @Prop({ index: true })
+  @AutoMap()
   transactionId?: string;
 }
 

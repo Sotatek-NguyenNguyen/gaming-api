@@ -15,4 +15,14 @@ export class GsRequestHistoryService {
   create(dto: ICreateGsRequestHistory, session: ClientSession) {
     return this.model.insertMany([dto], { session });
   }
+
+  async getByRequestId(requestId: string) {
+    const request = await this.model.findOne({ requestId }).lean({ virtuals: true });
+
+    if (request) {
+      await this.gsHelperService.saveRequestDataToRedis(request);
+    }
+
+    return request;
+  }
 }

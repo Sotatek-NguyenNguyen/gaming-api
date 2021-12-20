@@ -1,7 +1,13 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { GenerateAuthTokenTestingRequest, GetSignatureMsgToLoginRequest, LoginRequest, LoginResponse } from './dto';
+import {
+  GenerateAuthTokenTestingRequest,
+  GetSignatureMsgToLoginRequest,
+  GetSignatureMsgToLoginResponse,
+  LoginRequest,
+  LoginResponse,
+} from './dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -10,6 +16,7 @@ export class AuthController {
 
   @Post('signature-msg')
   @ApiOperation({ operationId: 'getSignatureMessageToLogin', description: 'Get signature message to login' })
+  @ApiOkResponse({ type: GetSignatureMsgToLoginResponse })
   getSignatureMessageToLogin(@Body() dto: GetSignatureMsgToLoginRequest) {
     return this.authService.getSignatureMessageToLogin(dto);
   }
@@ -33,6 +40,7 @@ export class AuthController {
   }
 
   @Get('/generate-token')
+  @ApiExcludeEndpoint()
   generateAuthTokenTesting(@Body() dto: GenerateAuthTokenTestingRequest) {
     if (process.env.NODE_ENV !== 'production') return this.authService.generateAuthToken(dto);
   }
