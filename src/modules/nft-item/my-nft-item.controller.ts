@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Authorize } from 'src/decorators';
+import { Authorize, GetUser } from 'src/decorators';
+import { User } from '../user/user.schema';
 import { ListCurrentUserNftQuery, ListNftResponse, MintNftItemRequest } from './dto';
 import { NftItemService } from './nft-item.service';
 
@@ -18,8 +19,8 @@ export class MyNftItemController {
   @ApiOkResponse({
     type: ListNftResponse,
   })
-  getMyNftItem(@Query() query: ListCurrentUserNftQuery) {
-    return query;
+  getMyNftItem(@Query() query: ListCurrentUserNftQuery, @GetUser() user: User) {
+    return this.nftItemService.getNftDataWithUserAddress(query, user.address);
   }
 
   @Post('/mint')
