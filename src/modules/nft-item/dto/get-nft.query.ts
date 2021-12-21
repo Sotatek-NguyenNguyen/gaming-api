@@ -1,10 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsString } from 'src/decorators/validators';
 import { ListCurrentUserNftQuery } from './get-current-user-nft.query';
 
 export class ListNftQuery extends ListCurrentUserNftQuery {
   @ApiPropertyOptional({})
-  @IsOptional()
-  @IsString()
+  @IsString({ optional: true })
   userAddress: string;
 }

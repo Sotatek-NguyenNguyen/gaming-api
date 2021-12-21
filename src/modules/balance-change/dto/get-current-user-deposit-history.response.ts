@@ -1,4 +1,3 @@
-import { IsString } from 'class-validator';
 import { AutoMap } from '@automapper/classes';
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseResponseDto, PaginationResponseDto } from 'src/common/dto';
@@ -15,7 +14,6 @@ export class BalanceChangesResponse extends BaseResponseDto {
 
   @ApiProperty({ example: '3MNh8ihk5XfweiJvBdQtLkecnbGvzA6p7vQESuqCvC5fVZ7mLoadytJwdVg9XpVfBTvsnQbUZ9eumvqST7vJ3RMT' })
   @AutoMap()
-  @IsString()
   transactionId: string;
 
   @ApiProperty({ enum: BalanceChangeType })

@@ -1,9 +1,8 @@
 import { Mapper } from '@automapper/core';
 import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
-import { NftItem } from './nft-item.schema';
-import { ListNftResponse } from './dto';
 import { NftItemResponse } from './dto/nft-item.response.dto';
+import { NftItem } from './nft-item.schema';
 
 @Injectable()
 export class NftMapper extends AutomapperProfile {

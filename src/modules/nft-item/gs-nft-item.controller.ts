@@ -1,6 +1,7 @@
+import { MapInterceptor } from '@automapper/nestjs';
 import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiHeaderGsGet, MapListInterceptor } from 'src/decorators';
+import { ApiHeaderGsGet } from 'src/decorators';
 import { NftItemResponse } from './dto/nft-item.response.dto';
 import { NftItem } from './nft-item.schema';
 import { NftItemService } from './nft-item.service';
@@ -19,8 +20,8 @@ export class GsNftItemController {
     type: NftItemResponse,
   })
   @ApiHeaderGsGet()
-  @UseInterceptors(MapListInterceptor(NftItemResponse, NftItem))
+  @UseInterceptors(MapInterceptor(NftItemResponse, NftItem))
   gsGetNftByAddress(@Param('address') address: string) {
-    return this.nftItemService.getNftDataWithNFTAddress(address);
+    return this.nftItemService.getNftByAddress(address);
   }
 }

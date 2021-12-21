@@ -21,7 +21,6 @@ export class BalanceChangeService {
   ) {}
 
   listTransactionHistory(filter: IBalanceChangesFilter) {
-    console.log(filter);
     return this._list(filter, { type: { $in: [BalanceChangeType.Deposit, BalanceChangeType.Withdrawn] } });
   }
 

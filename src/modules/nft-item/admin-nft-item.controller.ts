@@ -24,6 +24,6 @@ export class AdminNftItemController {
   })
   @UseInterceptors(MapListInterceptor(NftItemResponse, NftItem))
   getNftItemByUserId(@Query() query: ListNftQuery) {
-    return this.nftItemService.getNftData(query);
+    return this.nftItemService.list(query);
   }
 }
