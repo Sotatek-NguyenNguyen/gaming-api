@@ -1,6 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { MapInterceptor } from '@automapper/nestjs';
+import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiHeaderGsGet } from 'src/decorators';
 import { NftItemResponse } from './dto/nft-item.response.dto';
+import { NftItem } from './nft-item.schema';
 import { NftItemService } from './nft-item.service';
 
 @ApiTags('Game Server')
@@ -16,7 +19,9 @@ export class GsNftItemController {
   @ApiOkResponse({
     type: NftItemResponse,
   })
+  @ApiHeaderGsGet()
+  @UseInterceptors(MapInterceptor(NftItemResponse, NftItem))
   gsGetNftByAddress(@Param('address') address: string) {
-    return address;
+    return this.nftItemService.getNftByAddress(address);
   }
 }

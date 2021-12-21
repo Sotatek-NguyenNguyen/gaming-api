@@ -1,11 +1,15 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Authorize } from 'src/decorators';
+import { UserRole } from 'src/common/constant';
+import { Authorize, MapListInterceptor } from 'src/decorators';
 import { ListNftQuery, ListNftResponse } from './dto';
+import { NftItemResponse } from './dto/nft-item.response.dto';
+import { NftItem } from './nft-item.schema';
 import { NftItemService } from './nft-item.service';
 
 @ApiTags('Admin')
 @Controller('admin')
+@Authorize(UserRole.Admin)
 export class AdminNftItemController {
   constructor(readonly nftItemService: NftItemService) {}
 
@@ -18,7 +22,8 @@ export class AdminNftItemController {
   @ApiOkResponse({
     type: ListNftResponse,
   })
+  @UseInterceptors(MapListInterceptor(NftItemResponse, NftItem))
   getNftItemByUserId(@Query() query: ListNftQuery) {
-    return query;
+    return this.nftItemService.list(query);
   }
 }

@@ -32,9 +32,11 @@ export class ListUserTransactionHistoryQuery extends PaginationQueryDto {
   @ApiPropertyOptional({
     example: '3MNh8ihk5XfweiJvBdQtLkecnbGvzA6p7vQESuqCvC5fVZ7mLoadytJwdVg9XpVfBTvsnQbUZ9eumvqST7vJ3RMT',
   })
+  @IsString({ optional: true })
   transactionId: string;
 
   @ApiPropertyOptional({ enum: TransactionType })
+  @IsEnum({ optional: true, entity: TransactionType })
   type?: BalanceChangeType;
 }
 

@@ -1,3 +1,4 @@
+import { AutoMap } from '@automapper/classes';
 import { Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
@@ -9,12 +10,15 @@ export type NftItemDocument = NftItem & Document;
 @BaseSchema()
 export class NftItem extends BaseMongo {
   @Prop({ required: true, index: true })
+  @AutoMap()
   userAddress: string;
 
   @Prop({ required: true, index: true })
+  @AutoMap()
   referenceId: string;
 
   @Prop({ index: true })
+  @AutoMap()
   address?: string;
 }
 

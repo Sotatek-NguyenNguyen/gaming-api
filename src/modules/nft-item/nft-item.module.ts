@@ -1,3 +1,4 @@
+import { NftMapper } from './nft.mapper';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AdminNftItemController } from './admin-nft-item.controller';
@@ -8,7 +9,7 @@ import { NftItemService } from './nft-item.service';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: NftItem.name, schema: NftItemSchema }])],
-  providers: [NftItemService],
+  providers: [NftItemService, NftMapper],
   controllers: [MyNftItemController, AdminNftItemController, GsNftItemController],
 })
 export class NftItemModule {}
