@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/dto';
 
 export class ListCurrentUserNftQuery extends PaginationQueryDto {
@@ -7,5 +7,6 @@ export class ListCurrentUserNftQuery extends PaginationQueryDto {
     example: '3MNh8ihk5XfweiJvBdQtLkecnbGvzA6p7vQESuqCvC5fVZ7mLoadytJwdVg9XpVfBTvsnQbUZ9eumvqST7vJ3RMT',
   })
   @IsOptional()
+  @IsString()
   address: string;
 }
