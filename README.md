@@ -1,4 +1,4 @@
-# Gamify Gaming Service Backend
+# Gaming Service Backend
 
 ## Development
 
