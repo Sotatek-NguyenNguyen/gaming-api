@@ -20,12 +20,10 @@ export class AuthService {
     let user = await this.userService.getUserByAddress(address);
 
     if (!user) {
-      const { accountInGameId, balance } = await this.checkUserAddressHasGameAccount();
+      // const { accountInGameId, balance } = await this.checkUserAddressHasGameAccount();
 
       user = await this.userService.create({
         address,
-        accountInGameId,
-        balance,
       });
     }
 

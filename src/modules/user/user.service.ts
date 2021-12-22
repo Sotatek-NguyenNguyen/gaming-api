@@ -66,7 +66,7 @@ export class UserService {
     balance,
   }: {
     address: string;
-    accountInGameId: string | number;
+    accountInGameId?: string | number;
     balance?: number;
   }) {
     return this.model.create({
