@@ -17,5 +17,6 @@ import { MyBalanceChangeController } from './my-balance-change.controller';
   ],
   providers: [BalanceChangeService, BalanceChangeMapper],
   controllers: [MyBalanceChangeController, AdminBalanceChangeController, GsBalanceChangeController],
+  exports: [BalanceChangeService],
 })
 export class BalanceChangeModule {}

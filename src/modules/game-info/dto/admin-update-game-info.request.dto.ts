@@ -8,7 +8,7 @@ export class UpdateGameInfoRequest {
   name: string;
 
   @ApiProperty({
-    example: 'https://cdn.axieinfinity.com/landing-page/_next/static/images/logo-f3b5c962671a2516bc9fef42ad9e9145.webp',
+    example: 'https://www.youtube.com/watch?v=oMa8cc6YxSI&feature=youtu.be',
   })
   @IsUrl()
   @IsNotEmpty()

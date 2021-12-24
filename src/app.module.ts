@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { GameServerApiIdempotentMiddleware, GameServerSignatureMiddleware } from './middleware';
 import { AuthModule } from './modules/auth/auth.module';
 import { BalanceChangeModule } from './modules/balance-change/balance-change.module';
+import { FakeDataModule } from './modules/fake-data/fake-data.module';
 import { GameInfoModule } from './modules/game-info/game-info.module';
 import { GsRequestHistoryModule } from './modules/gs-request-history/gs-request-history.module';
 import { NftItemModule } from './modules/nft-item/nft-item.module';
@@ -45,6 +46,7 @@ import { UserModule } from './modules/user/user.module';
     TreasuryModule,
     AuthModule,
     GsRequestHistoryModule,
+    process.env.NODE_ENV !== 'production' && FakeDataModule,
   ],
 })
 export class AppModule implements NestModule {

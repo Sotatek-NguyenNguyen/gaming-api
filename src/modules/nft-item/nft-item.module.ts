@@ -11,5 +11,6 @@ import { NftItemService } from './nft-item.service';
   imports: [MongooseModule.forFeature([{ name: NftItem.name, schema: NftItemSchema }])],
   providers: [NftItemService, NftMapper],
   controllers: [MyNftItemController, AdminNftItemController, GsNftItemController],
+  exports: [NftItemService],
 })
 export class NftItemModule {}

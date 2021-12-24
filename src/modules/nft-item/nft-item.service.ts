@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { AnyKeys, FilterQuery, Model } from 'mongoose';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { INftFilter } from './interfaces';
 import { NftItem, NftItemDocument } from './nft-item.schema';
@@ -42,5 +42,9 @@ export class NftItemService {
     }
 
     return query;
+  }
+
+  insertMany(entities: AnyKeys<NftItem>[]) {
+    return this.model.insertMany(entities);
   }
 }

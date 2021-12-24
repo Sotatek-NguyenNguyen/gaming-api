@@ -4,11 +4,11 @@ export class BaseMongo {
   _id: string;
 
   @AutoMap()
-  id: string;
+  id?: string;
 
   @AutoMap()
-  createdAt: string;
+  createdAt?: string;
 
   @AutoMap()
-  updatedAt: string;
+  updatedAt?: string;
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
-import { FilterQuery, Model } from 'mongoose';
+import { AnyKeys, FilterQuery, Model } from 'mongoose';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { GsRequestHistoryService } from '../gs-request-history/gs-request-history.service';
 import { GsHelperService } from '../shared/services';
@@ -139,5 +139,9 @@ export class BalanceChangeService {
     }
 
     return query;
+  }
+
+  insertMany(entities: AnyKeys<BalanceChange>[]) {
+    return this.model.insertMany(entities);
   }
 }
