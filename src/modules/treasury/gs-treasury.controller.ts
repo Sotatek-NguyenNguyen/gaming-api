@@ -2,10 +2,13 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiHeaderGsGet } from 'src/decorators';
 import { TokenInfoResponse, TreasuryResponse } from './dto';
+import { TreasuryService } from './treasury.service';
 
 @ApiTags('Game Server')
 @Controller('game-server')
 export class GsTreasuryController {
+  constructor(readonly treasuryService: TreasuryService) {}
+
   @Get('/treasury-info')
   @ApiOperation({
     operationId: 'gsGetTreasuryInfo',
@@ -14,7 +17,7 @@ export class GsTreasuryController {
   @ApiHeaderGsGet()
   @ApiOkResponse({ type: TreasuryResponse })
   getTreasuryInfo() {
-    //
+    return this.treasuryService.getTreasuryInfo();
   }
 
   @Get('/token-info')
@@ -25,6 +28,6 @@ export class GsTreasuryController {
   @ApiHeaderGsGet()
   @ApiOkResponse({ type: TokenInfoResponse })
   gsGetTokenInfo() {
-    //
+    return this.treasuryService.getTokenInfo();
   }
 }

@@ -109,4 +109,19 @@ export class ApiConfigService {
   get walletAddress() {
     return this.getString('WALLET_ADDRESS');
   }
+
+  get blockchain() {
+    return {
+      rpcEndpoint: this.getString('BC_RPC_ENDPOINT'),
+      treasuryContractAddress: this.getString('TREASURY_CONTRACT_ADDRESS'),
+    };
+  }
+
+  get erc20Token() {
+    return {
+      name: this.getString('ERC_20_TOKEN_NAME'),
+      symbol: this.getString('ERC_20_TOKEN_NAME'),
+      address: this.getString('ERC_20_TOKEN_ADDRESS'),
+    };
+  }
 }

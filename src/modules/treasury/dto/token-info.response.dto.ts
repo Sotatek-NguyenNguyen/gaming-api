@@ -2,11 +2,17 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class TokenInfoResponse {
   @ApiProperty()
-  code: string;
-
-  @ApiProperty()
   name: string;
 
   @ApiProperty()
-  totalSupply: number;
+  symbol: string;
+
+  @ApiProperty()
+  address: string;
+
+  @ApiProperty({ example: '15796387' })
+  totalSupply: string;
+
+  @ApiProperty({ example: 9 })
+  decimals: number;
 }
