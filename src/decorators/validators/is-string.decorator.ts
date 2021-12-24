@@ -26,7 +26,7 @@ export const IsString = (
   const decorators = [];
 
   const { optional, defaultValue, minLength, maxLength, pattern, trim, lowercase, notEmpty } = Object.assign(
-    { trim: true },
+    { trim: true, notEmpty: true },
     options,
   );
 

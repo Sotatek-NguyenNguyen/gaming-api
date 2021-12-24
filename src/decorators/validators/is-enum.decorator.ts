@@ -1,16 +1,18 @@
 import { applyDecorators } from '@nestjs/common';
 import { Transform } from 'class-transformer';
-import { IsEnum as IsEnumOriginal, IsOptional, ValidationOptions } from 'class-validator';
+import { IsEnum as IsEnumOriginal, IsNotEmpty, IsOptional, ValidationOptions } from 'class-validator';
 
 export const IsEnum = (
   {
     defaultValue,
     entity,
-    optional,
+    optional = false,
+    notEmpty = true,
   }: {
     entity: any;
     defaultValue?: string;
     optional?: boolean;
+    notEmpty?: boolean;
   },
   options?: ValidationOptions,
 ) => {
@@ -18,6 +20,10 @@ export const IsEnum = (
 
   if (optional) {
     decorators.push(IsOptional());
+  }
+
+  if (notEmpty) {
+    decorators.push(IsNotEmpty());
   }
 
   return applyDecorators(

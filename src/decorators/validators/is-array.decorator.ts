@@ -16,7 +16,7 @@ import { isArrayNotEmpty } from 'src/common/utils';
 export const IsArray = (
   {
     optional,
-    notEmpty,
+    notEmpty = true,
     minSize,
     maxSize,
     unique,

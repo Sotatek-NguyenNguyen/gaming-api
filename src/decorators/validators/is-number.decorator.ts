@@ -24,7 +24,7 @@ export const IsNumber = (
     positive,
     negative,
     integer,
-    notEmpty,
+    notEmpty = true,
     greaterThan,
   }: {
     optional?: boolean;
