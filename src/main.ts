@@ -2,9 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
-import { MongoServerErrorFilter } from './filters/mongo-error-exception.filter';
 import { setupSwagger } from './swagger-setup';
 import { ApiConfigService } from './modules/shared/services';
+import { MongoServerErrorFilter, AllExceptionsFilter } from './filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,7 +14,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
-  app.useGlobalFilters(new MongoServerErrorFilter());
+  app.useGlobalFilters(new MongoServerErrorFilter(), new AllExceptionsFilter());
 
   const apiConfigService = app.get(ApiConfigService);
 
