@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
 import { AnyKeys, FilterQuery, Model } from 'mongoose';
+import { TreasuryEventName } from 'src/common/constant';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { GsRequestHistoryService } from '../gs-request-history/gs-request-history.service';
 import { GsHelperService } from '../shared/services';
+import { ITreasuryDepositEventConsumerPayload } from '../treasury-event-consumer/interfaces';
 import { UserService } from '../user/user.service';
 import { BalanceChangeType } from './balance-change.enum';
 import { BalanceChange, BalanceChangeDocument } from './balance-change.schema';
@@ -51,9 +53,7 @@ export class BalanceChangeService {
 
     const session = await this.model.startSession();
 
-    try {
-      session.startTransaction();
-
+    await session.withTransaction(async () => {
       await Promise.all([
         this.model.insertMany(
           dto.balanceChanges.map(
@@ -72,19 +72,11 @@ export class BalanceChangeService {
         ),
       ]);
 
-      await this.gsRequestHistoryService.create(
+      return this.gsRequestHistoryService.create(
         { requestId: dto.requestId, dataResponse: { success: true }, statusResponse: 200 },
         session,
       );
-
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-
-      throw error;
-    }
-
-    await session.endSession();
+    });
 
     await this.gsHelperService.saveRequestDataToRedis({
       requestId: dto.requestId,
@@ -93,6 +85,43 @@ export class BalanceChangeService {
     });
 
     return { success: true };
+  }
+
+  async handleTreasuryDepositEvent({
+    amount,
+    userAddress,
+    evtName,
+    transactionId,
+  }: ITreasuryDepositEventConsumerPayload) {
+    await this.userService.checkUserExistByAddress(userAddress);
+
+    const session = await this.model.startSession();
+
+    return session.withTransaction(() =>
+      Promise.all([
+        this.model.create(
+          [
+            {
+              userAddress,
+              amount,
+              transactionId,
+              type:
+                evtName === TreasuryEventName.DepositEvent ? BalanceChangeType.Deposit : BalanceChangeType.Withdrawn,
+            },
+          ],
+          { session },
+        ),
+        this.userService.bulkUpdateUserBalanceByAddress(
+          [
+            {
+              address: userAddress,
+              amount: +(evtName === TreasuryEventName.DepositEvent ? amount : -amount),
+            },
+          ],
+          session,
+        ),
+      ]),
+    );
   }
 
   async _list(

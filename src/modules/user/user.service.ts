@@ -77,12 +77,12 @@ export class UserService {
     });
   }
 
-  bulkUpdateUserBalanceByAddress(dto: { address: string; amount: number }[], session: ClientSession) {
+  bulkUpdateUserBalanceByAddress(dto: { address: string; amount: number }[], session?: ClientSession) {
     return this.model.bulkWrite(
       dto.map(({ address, amount }) => ({
         updateOne: {
           filter: { address },
-          update: { $inc: { amount } },
+          update: { $inc: { balance: amount } },
         },
       })),
       { session },

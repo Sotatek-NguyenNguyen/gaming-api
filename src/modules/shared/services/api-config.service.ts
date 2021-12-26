@@ -106,22 +106,19 @@ export class ApiConfigService {
     };
   }
 
-  get walletAddress() {
-    return this.getString('WALLET_ADDRESS');
-  }
-
   get blockchain() {
     return {
       rpcEndpoint: this.getString('BC_RPC_ENDPOINT'),
-      treasuryContractAddress: this.getString('TREASURY_CONTRACT_ADDRESS'),
+      programId: this.getString('TREASURY_PROGRAM_ID'),
+      treasuryAccount: this.getString('TREASURY_ACCOUNT'),
     };
   }
 
-  get erc20Token() {
+  get mintToken() {
     return {
-      name: this.getString('ERC_20_TOKEN_NAME'),
-      symbol: this.getString('ERC_20_TOKEN_NAME'),
-      address: this.getString('ERC_20_TOKEN_ADDRESS'),
+      name: this.getString('MINT_TOKEN_NAME'),
+      symbol: this.getString('MINT_TOKEN_NAME'),
+      address: this.getString('MINT_TOKEN_ADDRESS'),
     };
   }
 }

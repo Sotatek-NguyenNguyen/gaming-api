@@ -16,17 +16,27 @@ export class GameInfoService implements OnModuleInit {
     const gameInfo = await this.model.findOne();
 
     if (!gameInfo) {
-      await this.model.create({
-        walletAddress: this.configService.walletAddress,
-      });
+      await this.model.create({});
     }
   }
 
-  get() {
-    return this.model.findOne().lean({ virtuals: true });
+  async get() {
+    const gameInfo = await this.model.findOne().lean({ virtuals: true });
+
+    return { ...gameInfo, ...this._getAdditionalData() };
   }
 
-  update(dto: UpdateGameInfoRequest) {
-    return this.model.findOneAndUpdate({}, dto, { new: true }).lean({ virtuals: true });
+  async update(dto: UpdateGameInfoRequest) {
+    const gameInfo = await this.model.findOneAndUpdate({}, dto, { new: true }).lean({ virtuals: true });
+
+    return { ...gameInfo, ...this._getAdditionalData() };
+  }
+
+  private _getAdditionalData() {
+    return {
+      walletAddress: this.configService.blockchain.treasuryAccount,
+      currencyCode: this.configService.mintToken.symbol,
+      currencyName: this.configService.mintToken.name,
+    };
   }
 }

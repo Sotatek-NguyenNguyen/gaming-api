@@ -59,3 +59,12 @@ git commit -m "feat: api get prepaid balance"
 
 git commit -m "fix: api get ..."
 ```
+
+## Caution
+For some reason, default options doesn't work in @nestjs/bull. So pls add options when add job to a queue if needed.
+
+```
+this.queue.add({
+  // data
+}, { attempts: 3, backoff: 5000})
+```

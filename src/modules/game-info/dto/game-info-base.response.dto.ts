@@ -34,17 +34,3 @@ export class GameInfoBaseResponse {
   @AutoMap()
   gameURL: string;
 }
-
-// GAME INFO
-// - name
-// - videoIntroURL
-// - logoURL
-// - backgroundURL
-// - description
-// - gameURL
-
-// currencyCode
-// currencyName
-
-// walletAddress
-//

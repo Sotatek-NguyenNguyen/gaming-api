@@ -38,12 +38,4 @@ export class UpdateGameInfoRequest {
   @IsUrl()
   @IsNotEmpty()
   gameURL: string;
-
-  @ApiProperty({ example: 'SLP' })
-  @IsString()
-  currencyCode: string;
-
-  @ApiProperty({ example: 'Small Love Potion' })
-  @IsString()
-  currencyName: string;
 }
