@@ -32,6 +32,24 @@ export class GameInfo extends BaseMongo {
   @Prop({})
   @AutoMap()
   gameURL: string;
+
+  @Prop({})
+  @AutoMap()
+  webhookUrl: string;
+
+  @Prop({})
+  @AutoMap()
+  getItemUrl: string;
+
+  // Additional
+  @AutoMap()
+  currencyCode?: string;
+
+  @AutoMap()
+  currencyName?: string;
+
+  @AutoMap()
+  walletAddress?: string;
 }
 
 export const GameInfoSchema = SchemaFactory.createForClass(GameInfo);

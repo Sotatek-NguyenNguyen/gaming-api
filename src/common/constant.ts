@@ -10,6 +10,11 @@ export enum TreasuryEventName {
   WithdrawEvent = 'WithdrawEvent',
 }
 
+export const GameServerUrlRedisKey = {
+  Webhook: 'gameServer:url:webhook',
+  GetItemUrl: 'gameServer:url:itemUrl',
+};
+
 export const QueueName = {
   DepositEventHandler: 'deposit-event-handler',
   GameServerNotify: 'gs-notify',

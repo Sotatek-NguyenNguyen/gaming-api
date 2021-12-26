@@ -38,4 +38,14 @@ export class UpdateGameInfoRequest {
   @IsUrl()
   @IsNotEmpty()
   gameURL: string;
+
+  @ApiProperty({ example: 'https://api.axieinfinity.com/webhook' })
+  @IsUrl()
+  @IsNotEmpty()
+  webhookUrl: string;
+
+  @ApiProperty({ example: 'https://axieinfinity.com/items' })
+  @IsUrl()
+  @IsNotEmpty()
+  getItemUrl: string;
 }

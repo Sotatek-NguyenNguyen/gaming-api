@@ -12,13 +12,7 @@ export class GameServerNotifyConsumer {
     concurrency: NUMBER_CORE_CPUS,
   })
   transcode({ data }: Job<IGsNotifyConsumerPayload>) {
-    const signature = this.gsHelperService.generateSignature(data);
-
-    // TODO
-    // Store webhook Endpoint in database, and get here
-    // Axios
-
-    return signature;
+    return this.gsHelperService.notifyGs(data);
   }
 
   @OnQueueCompleted()
