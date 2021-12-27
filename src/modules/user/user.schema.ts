@@ -1,6 +1,6 @@
 import { AutoMap } from '@automapper/classes';
 import { Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes } from 'mongoose';
+import { Document } from 'mongoose';
 import { BaseMongo } from 'src/common/dto';
 import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
 import { BaseSchema } from 'src/decorators';
@@ -12,7 +12,7 @@ export type UserDocument = User & Document;
 export class User extends BaseMongo {
   @Prop({ required: true, unique: true })
   @AutoMap()
-  address?: string;
+  address: string;
 
   @Prop({})
   @AutoMap()
@@ -24,10 +24,21 @@ export class User extends BaseMongo {
   @Prop({ required: true })
   nonce: number;
 
-  @Prop({ default: 0, min: 0, type: SchemaTypes.Decimal128 })
+  @Prop({ default: 0, min: 0 })
   balance: number;
+
+  @Prop({ default: false })
+  isRequestingWithdraw?: boolean;
+
+  @Prop({})
+  lastRequestWithdrawAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.index({
+  isRequestingWithdraw: 1,
+  lastRequestWithdrawAt: 1,
+});
 
 UserSchema.plugin(mongooseLeanVirtuals);

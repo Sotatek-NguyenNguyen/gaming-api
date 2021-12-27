@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber } from 'src/decorators/validators';
 
-export class WithdrawRequest {
+export class UserWithdrawRequest {
   @ApiProperty({ example: 1 })
   @IsNumber({ positive: true })
   amount: number;

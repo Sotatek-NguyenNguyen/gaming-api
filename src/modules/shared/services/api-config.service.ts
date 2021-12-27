@@ -83,7 +83,7 @@ export class ApiConfigService {
   }
 
   get isMasterProcess() {
-    return cluster.isPrimary || this.getNumber('NODE_APP_INSTANCE') === 0;
+    return cluster.isPrimary || +process.env.NODE_APP_INSTANCE === 0 || cluster.isMaster;
   }
 
   get redisConfig() {
@@ -111,6 +111,9 @@ export class ApiConfigService {
       rpcEndpoint: this.getString('BC_RPC_ENDPOINT'),
       programId: this.getString('TREASURY_PROGRAM_ID'),
       treasuryAccount: this.getString('TREASURY_ACCOUNT'),
+      gameId: this.getString('TREASURY_GAME_ID'),
+      gameOwnerPK: this.getString('TREASURY_GAME_OWNER_PRIVATE_KEY'),
+      pdaSeed: this.getString('TREASURY_PDA_SEED'),
     };
   }
 

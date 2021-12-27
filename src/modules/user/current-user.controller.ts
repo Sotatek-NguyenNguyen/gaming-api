@@ -2,7 +2,7 @@ import { MapInterceptor } from '@automapper/nestjs';
 import { Body, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Authorize, GetUser } from 'src/decorators';
-import { UserResponse, WithdrawRequest, WithdrawResponse } from './dto';
+import { UserResponse, UserWithdrawRequest, UserWithdrawResponse } from './dto';
 import { User } from './user.schema';
 import { UserService } from './user.service';
 
@@ -30,8 +30,8 @@ export class MyBalanceController {
     operationId: 'requestWithdraw',
     description: 'Request to perform a withdrawal',
   })
-  @ApiOkResponse({ type: WithdrawResponse })
-  withdraw(@Body() dto: WithdrawRequest) {
-    return dto;
+  @ApiOkResponse({ type: UserWithdrawResponse })
+  withdraw(@Body() dto: UserWithdrawRequest, @GetUser('address') userAddress: string) {
+    return this.userService.userWithdraw(userAddress, dto);
   }
 }

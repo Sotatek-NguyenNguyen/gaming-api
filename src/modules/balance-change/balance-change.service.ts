@@ -78,6 +78,8 @@ export class BalanceChangeService {
       );
     });
 
+    await session.endSession();
+
     await this.gsHelperService.saveRequestDataToRedis({
       requestId: dto.requestId,
       dataResponse: { success: true },
@@ -97,7 +99,10 @@ export class BalanceChangeService {
 
     const session = await this.model.startSession();
 
-    return session.withTransaction(() =>
+    const balanceChangeType =
+      evtName === TreasuryEventName.DepositEvent ? BalanceChangeType.Deposit : BalanceChangeType.Withdrawn;
+
+    await session.withTransaction(() =>
       Promise.all([
         this.model.create(
           [
@@ -105,8 +110,7 @@ export class BalanceChangeService {
               userAddress,
               amount,
               transactionId,
-              type:
-                evtName === TreasuryEventName.DepositEvent ? BalanceChangeType.Deposit : BalanceChangeType.Withdrawn,
+              type: balanceChangeType,
             },
           ],
           { session },
@@ -116,12 +120,17 @@ export class BalanceChangeService {
             {
               address: userAddress,
               amount: +(evtName === TreasuryEventName.DepositEvent ? amount : -amount),
+              balanceChangeType,
             },
           ],
           session,
         ),
       ]),
     );
+
+    await session.endSession();
+
+    return Promise.resolve('Success');
   }
 
   async _list(

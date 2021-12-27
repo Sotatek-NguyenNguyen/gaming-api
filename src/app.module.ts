@@ -5,6 +5,7 @@ import { BullModule } from '@nestjs/bull';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { GameServerApiIdempotentMiddleware, GameServerSignatureMiddleware } from './middleware';
 import { AuthModule } from './modules/auth/auth.module';
 import { BalanceChangeModule } from './modules/balance-change/balance-change.module';
@@ -57,6 +58,7 @@ import { UserModule } from './modules/user/user.module';
     GsRequestHistoryModule,
     TreasuryEventConsumerModule,
     process.env.NODE_ENV !== 'production' && FakeDataModule,
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule implements NestModule {
