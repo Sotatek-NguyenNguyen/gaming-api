@@ -12,6 +12,5 @@ export class UserResponse extends BaseResponseDto {
   accountInGameId: string;
 
   @ApiProperty()
-  @AutoMap()
   balance: number;
 }

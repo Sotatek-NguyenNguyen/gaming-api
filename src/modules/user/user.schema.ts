@@ -25,7 +25,6 @@ export class User extends BaseMongo {
   nonce: number;
 
   @Prop({ default: 0, min: 0, type: SchemaTypes.Decimal128 })
-  @AutoMap()
   balance: number;
 }
 
