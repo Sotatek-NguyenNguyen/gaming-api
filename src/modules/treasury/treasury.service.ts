@@ -1,43 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { Provider, Wallet } from '@project-serum/anchor';
 import { getMintInfo } from '@project-serum/common';
-import { Connection, Keypair, PublicKey } from '@solana/web3.js';
-import { ApiConfigService } from '../shared/services';
+import { ApiConfigService, TreasuryGetterService } from '../shared/services';
 import { TokenInfoResponse, TreasuryResponse } from './dto';
 
 @Injectable()
 export class TreasuryService {
-  private finalizeConnection: Connection;
-
-  private provider: Provider;
-
-  private mintTokenAddress: PublicKey;
-
-  private treasuryAccountAddress: PublicKey;
-
-  constructor(readonly configService: ApiConfigService) {
-    this.finalizeConnection = new Connection(this.configService.blockchain.rpcEndpoint, 'finalized');
-    this.mintTokenAddress = new PublicKey(this.configService.mintToken.address);
-    this.treasuryAccountAddress = new PublicKey(this.configService.blockchain.treasuryAccount);
-
-    const keypair = Keypair.generate();
-    const wallet = new Wallet(keypair);
-    this.provider = new Provider(this.finalizeConnection, wallet, {});
-  }
+  constructor(readonly configService: ApiConfigService, readonly treasuryGetterService: TreasuryGetterService) {}
 
   async getTreasuryInfo(): Promise<TreasuryResponse> {
-    const data = await this.finalizeConnection.getParsedTokenAccountsByOwner(this.treasuryAccountAddress, {
-      mint: this.mintTokenAddress,
-    });
+    const { token, treasuryTokenAccount, treasuryAccount } = this.treasuryGetterService;
+    const { amount } = await token.getAccountInfo(treasuryTokenAccount);
 
     return {
-      balance: data?.value?.[0]?.account?.data?.parsed?.info?.tokenAmount?.uiAmountString || 0,
-      address: this.configService.blockchain.treasuryAccount,
+      balance: amount.toString(),
+      address: treasuryAccount.toBase58(),
     };
   }
 
   async getTokenInfo(): Promise<TokenInfoResponse> {
-    const { decimals, supply } = await getMintInfo(this.provider, this.mintTokenAddress);
+    const { decimals, supply } = await getMintInfo(
+      this.treasuryGetterService.provider,
+      this.treasuryGetterService.token.publicKey,
+    );
 
     return { decimals, totalSupply: supply.toString(), ...this.configService.mintToken };
   }
