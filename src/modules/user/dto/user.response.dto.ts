@@ -13,5 +13,5 @@ export class UserResponse extends BaseResponseDto {
 
   @ApiProperty()
   @AutoMap()
-  balance: string;
+  balance: number;
 }
