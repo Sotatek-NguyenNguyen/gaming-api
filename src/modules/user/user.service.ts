@@ -20,6 +20,7 @@ import { BalanceChangeType } from '../balance-change/balance-change.enum';
 import { ApiConfigService, TreasuryGetterService } from '../shared/services';
 import {
   AdminGrantTokenRequest,
+  GameBalanceResponse,
   ListUserQuery,
   ListUserResponse,
   UserResponse,
@@ -237,6 +238,26 @@ export class UserService {
 
       throw error;
     }
+  }
+
+  async adminGetGameBalance(): Promise<GameBalanceResponse> {
+    const [{ balance }, [{ inGameBalance }]] = await Promise.all([
+      this.treasuryGetterService.getTreasuryBalance(),
+      this.model.aggregate([
+        { $match: { role: UserRole.Player } },
+        {
+          $group: {
+            _id: null,
+            inGameBalance: { $sum: '$balance' },
+          },
+        },
+      ]),
+    ]);
+
+    return {
+      actualGameBalance: balance,
+      inGameBalance,
+    };
   }
 
   adminGrantToken(dto: AdminGrantTokenRequest) {

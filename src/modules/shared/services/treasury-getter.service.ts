@@ -73,4 +73,14 @@ export class TreasuryGetterService implements OnModuleInit {
   get tokenDecimals() {
     return this._tokenDecimals;
   }
+
+  async getTreasuryBalance() {
+    const { token, treasuryTokenAccount, treasuryAccount } = this;
+    const { amount } = await token.getAccountInfo(treasuryTokenAccount);
+
+    return {
+      balance: amount.toString(),
+      address: treasuryAccount.toBase58(),
+    };
+  }
 }

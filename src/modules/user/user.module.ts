@@ -1,6 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BalanceChangeModule } from '../balance-change/balance-change.module';
+import { AdminGameBalanceController } from './admin-game-balance.controller';
 import { AdminUserController } from './admin-user.controller';
 import { MyBalanceController } from './current-user.controller';
 import { GsBalanceController } from './gs-user.controller';
@@ -14,7 +15,7 @@ import { UserService } from './user.service';
     forwardRef(() => BalanceChangeModule),
   ],
   providers: [UserService, UserMapper],
-  controllers: [MyBalanceController, AdminUserController, GsBalanceController],
+  controllers: [MyBalanceController, AdminUserController, GsBalanceController, AdminGameBalanceController],
   exports: [UserService],
 })
 export class UserModule {}
