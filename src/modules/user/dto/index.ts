@@ -6,3 +6,5 @@ export * from './list-user.response.dto';
 export * from './list-user.query.dto';
 export * from './admin-grant-token.request.dto';
 export * from './game-balance.response.dto';
+export * from './admin-withdraw.request.dto';
+export * from './admin-withdraw.response.dto';

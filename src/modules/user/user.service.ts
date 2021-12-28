@@ -15,11 +15,16 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/sp
 import { PublicKey } from '@solana/web3.js';
 import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { UserRole } from 'src/common/constant';
+import { SuccessResponseDto } from 'src/common/dto';
+import { dayjs } from 'src/common/pkg/dayjs';
 import { generateRandomNumber } from 'src/common/utils';
 import { BalanceChangeType } from '../balance-change/balance-change.enum';
+import { BalanceChangeService } from '../balance-change/balance-change.service';
 import { ApiConfigService, TreasuryGetterService } from '../shared/services';
 import {
   AdminGrantTokenRequest,
+  AdminWithdrawRequest,
+  AdminWithdrawResponse,
   GameBalanceResponse,
   ListUserQuery,
   ListUserResponse,
@@ -28,9 +33,6 @@ import {
   UserWithdrawResponse,
 } from './dto';
 import { User, UserDocument } from './user.schema';
-import { dayjs } from 'src/common/pkg/dayjs';
-import { BalanceChangeService } from '../balance-change/balance-change.service';
-import { SuccessResponseDto } from 'src/common/dto';
 
 @Injectable()
 export class UserService {
@@ -181,6 +183,12 @@ export class UserService {
       throw new BadRequestException('USER_BALANCE_IS_NOT_ENOUGH_OR_USER_HAS_PENDING_WITHDRAW_REQUEST');
     }
 
+    const { balance: treasuryBalance } = await this.treasuryGetterService.getTreasuryBalance();
+
+    if (new BN(treasuryBalance).lt(new BN(amount))) {
+      throw new BadRequestException('TREASURY_BALANCE_IS_NOT_ENOUGH');
+    }
+
     try {
       const {
         provider,
@@ -238,6 +246,64 @@ export class UserService {
 
       throw error;
     }
+  }
+
+  async adminWithdraw(
+    payerAddress: string,
+    { amount, userAddress }: AdminWithdrawRequest,
+  ): Promise<AdminWithdrawResponse> {
+    const { balance: treasuryBalance } = await this.treasuryGetterService.getTreasuryBalance();
+
+    if (new BN(treasuryBalance).lt(new BN(amount))) {
+      throw new BadRequestException('TREASURY_BALANCE_IS_NOT_ENOUGH');
+    }
+
+    const {
+      provider,
+      program,
+      token,
+      gameOwnerKeyPair: owner,
+      treasuryAccount,
+      treasuryTokenAccount,
+      gameId,
+    } = this.treasuryGetterService;
+
+    const payerAddressAccount = new PublicKey(payerAddress);
+    const withdrawAccount = new PublicKey(userAddress);
+    const withdrawnTokenAccount = await Token.getAssociatedTokenAddress(
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
+      token.publicKey,
+      withdrawAccount,
+    );
+
+    // Server create tx and sign
+    const tx = await program.transaction.withdraw(gameId, new BN(amount), {
+      accounts: {
+        owner: owner.publicKey,
+        sender: payerAddressAccount,
+        withdrawUser: withdrawAccount,
+        treasuryAccount,
+        treasuryTokenAccount,
+        withdrawTokenAccount: withdrawnTokenAccount,
+        tokenId: token.publicKey,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: web3.SystemProgram.programId,
+        rent: web3.SYSVAR_RENT_PUBKEY,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      },
+    });
+
+    tx.recentBlockhash = (await provider.connection.getRecentBlockhash()).blockhash;
+    tx.feePayer = payerAddressAccount;
+
+    tx.partialSign(owner);
+
+    const serializedTx = tx.serialize({ verifySignatures: false }).toString('base64');
+
+    return {
+      serializedTx,
+    };
   }
 
   async adminGetGameBalance(): Promise<GameBalanceResponse> {
