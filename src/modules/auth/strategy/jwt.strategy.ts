@@ -16,8 +16,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: IJwtPayload) {
-    await this.userService.checkUserExistByAddress(payload.address);
+    const user = await this.userService.checkUserExistByAddress(payload.address);
 
-    return { userId: payload.sub, address: payload.address, role: payload.role };
+    return { userId: payload.sub, address: user.address, role: user.role };
   }
 }

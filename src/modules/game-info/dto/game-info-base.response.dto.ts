@@ -33,4 +33,12 @@ export class GameInfoBaseResponse {
   @ApiProperty({ example: 'https://axieinfinity.com/' })
   @AutoMap()
   gameURL: string;
+
+  @ApiProperty({ example: 'SLP' })
+  @AutoMap()
+  currencyCode: string;
+
+  @ApiProperty({ example: 'Small Love Potion' })
+  @AutoMap()
+  currencyName: string;
 }
