@@ -1,8 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from 'src/common/constant';
+import { SuccessResponseDto } from 'src/common/dto';
 import { Authorize } from 'src/decorators';
-import { ListUserQuery, ListUserResponse } from './dto';
+import { AdminGrantTokenRequest, ListUserQuery, ListUserResponse } from './dto';
 import { UserService } from './user.service';
 
 @ApiTags('Admin')
@@ -21,5 +22,25 @@ export class AdminUserController {
   })
   listUser(@Query() query: ListUserQuery) {
     return this.userService.list(query);
+  }
+
+  @Post('grant-token')
+  @ApiOperation({
+    operationId: 'adminGrantTokenUser',
+    description: "Allows admin to top-up user's balance",
+  })
+  @ApiOkResponse({ type: SuccessResponseDto })
+  adminGrantTokenUser(@Body() dto: AdminGrantTokenRequest) {
+    return this.userService.adminGrantToken(dto);
+  }
+
+  @Post('deduct-token')
+  @ApiOperation({
+    operationId: 'adminDeductTokenUser',
+    description: "Allows admin to deduct user's balance",
+  })
+  @ApiOkResponse({ type: SuccessResponseDto })
+  adminDeductTokenUser(@Body() dto: AdminGrantTokenRequest) {
+    return this.userService.adminDeductToken(dto);
   }
 }

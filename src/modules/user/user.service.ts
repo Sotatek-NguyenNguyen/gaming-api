@@ -1,6 +1,13 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BN, web3 } from '@project-serum/anchor';
@@ -11,9 +18,18 @@ import { UserRole } from 'src/common/constant';
 import { generateRandomNumber } from 'src/common/utils';
 import { BalanceChangeType } from '../balance-change/balance-change.enum';
 import { ApiConfigService, TreasuryGetterService } from '../shared/services';
-import { ListUserQuery, ListUserResponse, UserResponse, UserWithdrawRequest, UserWithdrawResponse } from './dto';
+import {
+  AdminGrantTokenRequest,
+  ListUserQuery,
+  ListUserResponse,
+  UserResponse,
+  UserWithdrawRequest,
+  UserWithdrawResponse,
+} from './dto';
 import { User, UserDocument } from './user.schema';
 import { dayjs } from 'src/common/pkg/dayjs';
+import { BalanceChangeService } from '../balance-change/balance-change.service';
+import { SuccessResponseDto } from 'src/common/dto';
 
 @Injectable()
 export class UserService {
@@ -22,6 +38,7 @@ export class UserService {
     readonly configService: ApiConfigService,
     readonly treasuryGetterService: TreasuryGetterService,
     @InjectMapper() readonly mapper: Mapper,
+    @Inject(forwardRef(() => BalanceChangeService)) readonly balanceChangeService: BalanceChangeService,
   ) {}
 
   @Cron(CronExpression.EVERY_30_MINUTES)
@@ -220,6 +237,52 @@ export class UserService {
 
       throw error;
     }
+  }
+
+  adminGrantToken(dto: AdminGrantTokenRequest) {
+    return this._adminGrantOrDeductToken(dto, BalanceChangeType.AdminGrant);
+  }
+
+  adminDeductToken(dto: AdminGrantTokenRequest) {
+    return this._adminGrantOrDeductToken(dto, BalanceChangeType.AdminDeduct);
+  }
+
+  async _adminGrantOrDeductToken(
+    { amount, userAddress, note }: AdminGrantTokenRequest,
+    type: BalanceChangeType,
+  ): Promise<SuccessResponseDto> {
+    await this.checkUserExistByAddress(userAddress);
+
+    const session = await this.model.startSession();
+
+    await session.withTransaction(() =>
+      Promise.all([
+        this.model.findOneAndUpdate(
+          { address: userAddress },
+          {
+            $inc: {
+              balance: type === BalanceChangeType.AdminGrant ? amount : -amount,
+            },
+          },
+          { session },
+        ),
+        this.balanceChangeService.insertMany(
+          [
+            {
+              amount,
+              type,
+              userAddress,
+              note,
+            },
+          ],
+          { session },
+        ),
+      ]),
+    );
+
+    await session.endSession();
+
+    return { success: true };
   }
 
   _getFilterQuery({ address, accountInGameId }: ListUserQuery) {

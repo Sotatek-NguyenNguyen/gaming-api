@@ -25,6 +25,10 @@ export class BalanceChange extends BaseMongo {
   @Prop({ index: true })
   @AutoMap()
   transactionId?: string;
+
+  @Prop({})
+  @AutoMap()
+  note?: string;
 }
 
 export const BalanceChangeSchema = SchemaFactory.createForClass(BalanceChange);

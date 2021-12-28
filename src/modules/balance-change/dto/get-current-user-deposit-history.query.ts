@@ -9,6 +9,8 @@ import { BalanceChangeType } from '../balance-change.enum';
 export enum TransactionType {
   Deposit = 'deposit',
   Withdrawn = 'withdrawn',
+  AdminGrant = 'admin_grant',
+  AdminDeduct = 'admin_deduct',
 }
 
 // must be partial of BalanceChangeType

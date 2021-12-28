@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
-import { AnyKeys, FilterQuery, Model } from 'mongoose';
+import { AnyKeys, ClientSession, FilterQuery, Model } from 'mongoose';
 import { TreasuryEventName } from 'src/common/constant';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { GsRequestHistoryService } from '../gs-request-history/gs-request-history.service';
@@ -23,7 +23,16 @@ export class BalanceChangeService {
   ) {}
 
   listTransactionHistory(filter: IBalanceChangesFilter) {
-    return this._list(filter, { type: { $in: [BalanceChangeType.Deposit, BalanceChangeType.Withdrawn] } });
+    return this._list(filter, {
+      type: {
+        $in: [
+          BalanceChangeType.Deposit,
+          BalanceChangeType.Withdrawn,
+          BalanceChangeType.AdminDeduct,
+          BalanceChangeType.AdminGrant,
+        ],
+      },
+    });
   }
 
   listInGameBcHistory(filter: IBalanceChangesFilter) {
@@ -143,7 +152,7 @@ export class BalanceChangeService {
     const [data, total] = await Promise.all([
       this.model
         .find(query)
-        .sort({ _id: 1 })
+        .sort({ _id: -1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean({ virtuals: true }),
@@ -179,7 +188,8 @@ export class BalanceChangeService {
     return query;
   }
 
-  insertMany(entities: AnyKeys<BalanceChange>[]) {
-    return this.model.insertMany(entities);
+  insertMany(entities: AnyKeys<BalanceChange>[], dto?: { session?: ClientSession }) {
+    const { session } = dto;
+    return this.model.insertMany(entities, { session });
   }
 }
