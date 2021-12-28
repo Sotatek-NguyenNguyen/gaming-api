@@ -41,4 +41,8 @@ export class GameInfoBaseResponse {
   @ApiProperty({ example: 'Small Love Potion' })
   @AutoMap()
   currencyName: string;
+
+  @ApiProperty()
+  @AutoMap()
+  walletAddress: string;
 }

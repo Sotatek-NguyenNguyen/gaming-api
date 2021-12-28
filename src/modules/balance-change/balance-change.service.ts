@@ -61,33 +61,34 @@ export class BalanceChangeService {
     await this.userService.checkUsersExist(Array.from(addresses));
 
     const session = await this.model.startSession();
-
-    await session.withTransaction(async () => {
-      await Promise.all([
-        this.model.insertMany(
-          dto.balanceChanges.map(
-            (bc) =>
-              <BalanceChange>{
-                userAddress: bc.address,
-                amount: bc.amount,
-                type: bc.amount > 0 ? BalanceChangeType.InGameIncrease : BalanceChangeType.InGameDecrease,
-              },
+    try {
+      await session.withTransaction(async () => {
+        await Promise.all([
+          this.model.insertMany(
+            dto.balanceChanges.map(
+              (bc) =>
+                <BalanceChange>{
+                  userAddress: bc.address,
+                  amount: bc.amount,
+                  type: bc.amount > 0 ? BalanceChangeType.InGameIncrease : BalanceChangeType.InGameDecrease,
+                },
+            ),
+            { session },
           ),
-          { session },
-        ),
-        this.userService.bulkUpdateUserBalanceByAddress(
-          Object.entries(userBalanceMap).map(([address, amount]) => ({ address, amount })),
+          this.userService.bulkUpdateUserBalanceByAddress(
+            Object.entries(userBalanceMap).map(([address, amount]) => ({ address, amount })),
+            session,
+          ),
+        ]);
+
+        return this.gsRequestHistoryService.create(
+          { requestId: dto.requestId, dataResponse: { success: true }, statusResponse: 200 },
           session,
-        ),
-      ]);
-
-      return this.gsRequestHistoryService.create(
-        { requestId: dto.requestId, dataResponse: { success: true }, statusResponse: 200 },
-        session,
-      );
-    });
-
-    await session.endSession();
+        );
+      });
+    } finally {
+      await session.endSession();
+    }
 
     await this.gsHelperService.saveRequestDataToRedis({
       requestId: dto.requestId,
@@ -111,33 +112,35 @@ export class BalanceChangeService {
     const balanceChangeType =
       evtName === TreasuryEventName.DepositEvent ? BalanceChangeType.Deposit : BalanceChangeType.Withdrawn;
 
-    await session.withTransaction(() =>
-      Promise.all([
-        this.model.create(
-          [
-            {
-              userAddress,
-              amount,
-              transactionId,
-              type: balanceChangeType,
-            },
-          ],
-          { session },
-        ),
-        this.userService.bulkUpdateUserBalanceByAddress(
-          [
-            {
-              address: userAddress,
-              amount: +(evtName === TreasuryEventName.DepositEvent ? amount : -amount),
-              balanceChangeType,
-            },
-          ],
-          session,
-        ),
-      ]),
-    );
-
-    await session.endSession();
+    try {
+      await session.withTransaction(() =>
+        Promise.all([
+          this.model.create(
+            [
+              {
+                userAddress,
+                amount,
+                transactionId,
+                type: balanceChangeType,
+              },
+            ],
+            { session },
+          ),
+          this.userService.bulkUpdateUserBalanceByAddress(
+            [
+              {
+                address: userAddress,
+                amount: +(evtName === TreasuryEventName.DepositEvent ? amount : -amount),
+                balanceChangeType,
+              },
+            ],
+            session,
+          ),
+        ]),
+      );
+    } finally {
+      await session.endSession();
+    }
 
     return Promise.resolve('Success');
   }
