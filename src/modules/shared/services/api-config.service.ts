@@ -120,7 +120,7 @@ export class ApiConfigService {
   get mintToken() {
     return {
       name: this.getString('MINT_TOKEN_NAME'),
-      symbol: this.getString('MINT_TOKEN_NAME'),
+      symbol: this.getString('MINT_TOKEN_SYMBOL'),
       address: this.getString('MINT_TOKEN_ADDRESS'),
     };
   }
