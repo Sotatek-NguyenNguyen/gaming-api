@@ -8,7 +8,7 @@ export enum UserRole {
 export enum TreasuryEventName {
   DepositEvent = 'DepositEvent',
   WithdrawEvent = 'WithdrawEvent',
-  MintNftEvent = 'MintNftEvent',
+  NftRegisterEvent = 'NftRegisterEvent',
   NftTransferEvent = 'NftTransferEvent',
 }
 

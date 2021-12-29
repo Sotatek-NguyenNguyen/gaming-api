@@ -29,6 +29,7 @@ import {
   ListUserQuery,
   ListUserResponse,
   UserResponse,
+  UserQuerySortBy,
   UserWithdrawRequest,
   UserWithdrawResponse,
 } from './dto';
@@ -65,7 +66,7 @@ export class UserService {
     const [data, total] = await Promise.all([
       this.model
         .find(query)
-        .sort({ _id: -1 })
+        .sort(filter.sortBy === UserQuerySortBy.Balance ? { balance: -1 } : { _id: -1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean({ virtuals: true }),
