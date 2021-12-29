@@ -39,12 +39,12 @@ export class UpdateGameInfoRequest {
   @IsNotEmpty()
   gameURL: string;
 
-  @ApiProperty({ example: 'https://api.axieinfinity.com/webhook' })
+  @ApiProperty({ example: 'https://api-gaming.dev.gamifyclub.com/game-server-dummy/webhook' })
   @IsUrl()
   @IsNotEmpty()
   webhookUrl: string;
 
-  @ApiProperty({ example: 'https://axieinfinity.com/items' })
+  @ApiProperty({ example: 'https://api-gaming.dev.gamifyclub.com/game-server-dummy/validate-game-item' })
   @IsUrl()
   @IsNotEmpty()
   getItemUrl: string;
