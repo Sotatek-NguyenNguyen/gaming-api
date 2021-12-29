@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { BalanceChangeModule } from './modules/balance-change/balance-change.module';
 import { FakeDataModule } from './modules/fake-data/fake-data.module';
 import { GameInfoModule } from './modules/game-info/game-info.module';
+import { GameServerDummyModule } from './modules/game-server-dummy/gs-dummy.module';
 import { GsRequestHistoryModule } from './modules/gs-request-history/gs-request-history.module';
 import { NftItemModule } from './modules/nft-item/nft-item.module';
 import { ApiConfigService } from './modules/shared/services';
@@ -57,8 +58,8 @@ import { UserModule } from './modules/user/user.module';
     AuthModule,
     GsRequestHistoryModule,
     TreasuryEventConsumerModule,
-    process.env.NODE_ENV !== 'production' && FakeDataModule,
     ScheduleModule.forRoot(),
+    process.env.NODE_ENV !== 'production' && FakeDataModule && GameServerDummyModule,
   ],
 })
 export class AppModule implements NestModule {

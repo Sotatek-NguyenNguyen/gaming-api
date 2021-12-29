@@ -2,7 +2,7 @@ import { OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Processor } fro
 import { Job } from 'bull';
 import { NUMBER_CORE_CPUS, QueueName } from 'src/common/constant';
 import { GsHelperService } from '../shared/services';
-import { IGsNotifyConsumerPayload } from './interfaces';
+import { GsNotifyConsumerPayload } from './interfaces';
 
 @Processor(QueueName.GameServerNotify)
 export class GameServerNotifyConsumer {
@@ -11,7 +11,7 @@ export class GameServerNotifyConsumer {
   @Process({
     concurrency: NUMBER_CORE_CPUS,
   })
-  transcode({ data }: Job<IGsNotifyConsumerPayload>) {
+  transcode({ data }: Job<GsNotifyConsumerPayload>) {
     return this.gsHelperService.notifyGs(data);
   }
 

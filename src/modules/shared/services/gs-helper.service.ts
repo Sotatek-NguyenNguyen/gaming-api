@@ -5,7 +5,7 @@ import { Redis } from 'ioredis';
 import { stringify } from 'querystring';
 import { GameServerUrlRedisKey } from 'src/common/constant';
 import { http } from 'src/common/http';
-import { IGsNotifyConsumerPayload } from 'src/modules/treasury-event-consumer/interfaces';
+import { GsNotifyConsumerPayload } from 'src/modules/treasury-event-consumer/interfaces';
 import { ApiConfigService } from './api-config.service';
 
 @Injectable()
@@ -42,16 +42,25 @@ export class GsHelperService {
     );
   }
 
-  async notifyGs({ event, data }: IGsNotifyConsumerPayload) {
-    const signature = this.generateSignature(data);
-
+  async notifyGs(dto: GsNotifyConsumerPayload) {
+    const signature = this.generateSignature(dto);
     const gsWebhookUrl = await this.redis.get(GameServerUrlRedisKey.Webhook);
 
     if (!gsWebhookUrl) {
       throw new Error('GAME_SERVER_WEBHOOK_IS_NOT_SET');
     }
 
-    return http.post(gsWebhookUrl, { event, data, signature });
+    const { event, data } = dto;
+
+    return http.post(
+      gsWebhookUrl,
+      { event, data },
+      {
+        headers: {
+          'x-signature': signature,
+        },
+      },
+    );
   }
 
   async getItem(itemId: string) {

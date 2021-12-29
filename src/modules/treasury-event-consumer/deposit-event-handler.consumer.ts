@@ -2,12 +2,12 @@ import { InjectQueue, OnQueueCompleted, OnQueueError, OnQueueFailed, Process, Pr
 import { Job, Queue } from 'bull';
 import { NUMBER_CORE_CPUS, QueueName } from 'src/common/constant';
 import { BalanceChangeService } from '../balance-change/balance-change.service';
-import { IGsNotifyConsumerPayload, ITreasuryDepositEventConsumerPayload } from './interfaces';
+import { GsNotifyConsumerPayload, ITreasuryDepositEventConsumerPayload } from './interfaces';
 
 @Processor(QueueName.DepositEventHandler)
 export class DepositTreasuryHandlerConsumer {
   constructor(
-    @InjectQueue(QueueName.GameServerNotify) readonly gsNotifyQueue: Queue<IGsNotifyConsumerPayload>,
+    @InjectQueue(QueueName.GameServerNotify) readonly gsNotifyQueue: Queue<GsNotifyConsumerPayload>,
     readonly balanceChangeService: BalanceChangeService,
   ) {}
 

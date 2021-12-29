@@ -8,6 +8,8 @@ export enum UserRole {
 export enum TreasuryEventName {
   DepositEvent = 'DepositEvent',
   WithdrawEvent = 'WithdrawEvent',
+  MintNftEvent = 'MintNftEvent',
+  NftTransferEvent = 'NftTransferEvent',
 }
 
 export const GameServerUrlRedisKey = {

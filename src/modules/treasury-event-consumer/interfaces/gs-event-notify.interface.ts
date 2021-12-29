@@ -1,27 +1,53 @@
 import { TreasuryEventName } from 'src/common/constant';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
-export interface IGsNotifyConsumerPayload<T = IGsDepositNotifyData> {
-  event: TreasuryEventName;
-
-  data: T;
-}
-
-interface IGsDepositNotifyData {
+@ApiExtraModels()
+export class GsDepositWithdrawNotifyData {
+  @ApiProperty()
   userAddress: string;
 
+  @ApiProperty()
   amount: string;
 }
 
-export interface IGsMintNftNotifyData {
+@ApiExtraModels()
+export class GsMintNftNotifyData {
+  @ApiProperty()
   userAddress: string;
 
+  @ApiProperty()
   nftAddress: string;
 
-  referenceId: string;
+  @ApiProperty()
+  gameItemId: string;
 }
 
-export interface IGsMintTransferNotifyData {
-  userAddress: string;
+@ApiExtraModels()
+export class GsNftTransferNotifyData {
+  @ApiProperty()
+  fromUserAddress: string;
 
+  @ApiProperty()
+  toUserAddress: string;
+
+  @ApiProperty()
   nftAddress: string;
+
+  @ApiProperty()
+  gameItemId: string;
+}
+
+@ApiExtraModels(GsDepositWithdrawNotifyData, GsMintNftNotifyData, GsNftTransferNotifyData)
+export class GsNotifyConsumerPayload<T = GsDepositWithdrawNotifyData> {
+  @ApiProperty({ enum: TreasuryEventName })
+  event: TreasuryEventName;
+
+  @ApiProperty({
+    oneOf: [
+      { $ref: getSchemaPath(GsDepositWithdrawNotifyData) },
+      { $ref: getSchemaPath(GsMintNftNotifyData) },
+      { $ref: getSchemaPath(GsNftTransferNotifyData) },
+    ],
+  })
+  data: T;
 }
