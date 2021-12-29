@@ -185,7 +185,7 @@ export class BalanceChangeService {
     }
 
     if (toDate) {
-      set(query, 'createdAt.$lte', fromDate);
+      set(query, 'createdAt.$lte', toDate);
     }
 
     return query;
