@@ -43,13 +43,22 @@ export class GameInfo extends BaseMongo {
 
   // Additional
   @AutoMap()
-  currencyCode?: string;
+  tokenCode?: string;
 
   @AutoMap()
-  currencyName?: string;
+  tokenName?: string;
 
   @AutoMap()
   walletAddress?: string;
+
+  @AutoMap()
+  tokenAddress?: string;
+
+  @AutoMap()
+  programId?: string;
+
+  @AutoMap()
+  gameId?: string;
 }
 
 export const GameInfoSchema = SchemaFactory.createForClass(GameInfo);

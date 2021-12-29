@@ -53,8 +53,11 @@ export class GameInfoService implements OnModuleInit {
   private _getAdditionalData() {
     return {
       walletAddress: this.configService.blockchain.treasuryAccount,
-      currencyCode: this.configService.mintToken.symbol,
-      currencyName: this.configService.mintToken.name,
+      programId: this.configService.blockchain.programId,
+      gameId: this.configService.blockchain.gameId,
+      tokenAddress: this.configService.mintToken.address,
+      tokenCode: this.configService.mintToken.symbol,
+      tokenName: this.configService.mintToken.name,
     };
   }
 }

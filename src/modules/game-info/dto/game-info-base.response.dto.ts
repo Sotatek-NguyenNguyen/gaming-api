@@ -34,13 +34,25 @@ export class GameInfoBaseResponse {
   @AutoMap()
   gameURL: string;
 
+  @ApiProperty()
+  @AutoMap()
+  programId: string;
+
+  @ApiProperty()
+  @AutoMap()
+  gameId: string;
+
+  @ApiProperty()
+  @AutoMap()
+  tokenAddress: string;
+
   @ApiProperty({ example: 'SLP' })
   @AutoMap()
-  currencyCode: string;
+  tokenCode: string;
 
   @ApiProperty({ example: 'Small Love Potion' })
   @AutoMap()
-  currencyName: string;
+  tokenName: string;
 
   @ApiProperty()
   @AutoMap()
