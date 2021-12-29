@@ -192,7 +192,6 @@ export class BalanceChangeService {
   }
 
   insertMany(entities: AnyKeys<BalanceChange>[], dto?: { session?: ClientSession }) {
-    const { session } = dto;
-    return this.model.insertMany(entities, { session });
+    return this.model.insertMany(entities, { session: dto?.session });
   }
 }
