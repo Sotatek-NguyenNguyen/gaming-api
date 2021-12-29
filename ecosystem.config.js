@@ -9,20 +9,18 @@ module.exports = {
       exec_mode: 'cluster',
     },
     {
-      name: 'stg-gaming-service',
-      script: './dist/main.js',
+      name: 'gaming-treasury-event-service',
+      script: 'node ./dist/console.js treasury-event',
       env: {
-        NODE_ENV: 'staging',
+        NODE_ENV: 'develop',
       },
-      exec_mode: 'cluster',
     },
     {
-      name: 'gaming-service',
-      script: './dist/main.js',
+      name: 'gaming-treasury-signature-service',
+      script: 'node ./dist/console.js treasury-signature',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'develop',
       },
-      exec_mode: 'cluster',
     },
   ],
 };

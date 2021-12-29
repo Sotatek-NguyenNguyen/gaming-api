@@ -120,7 +120,7 @@ export class TreasuryEventService {
 
     await Promise.all(
       events
-        .filter((evt) => [TreasuryEventName.DepositEvent, TreasuryEventName.WithdrawEvent].includes(evt.data.evtName))
+        .filter((evt) => [TreasuryEventName.DepositEvent, TreasuryEventName.WithdrawEvent].includes(evt?.data?.evtName))
         .map((evt) => this.depositQueue.add(evt.data, <JobOptions>{ attempts: 3, backoff: 5000 })),
     );
 
@@ -181,6 +181,10 @@ export class TreasuryEventService {
       for (let i = 0; i < serializedLogMessages.length; i++) {
         const log = serializedLogMessages[i];
         const decodedLog = this.coder.events.decode(log) as IDecodedDepositEventFromTreasury;
+
+        if (!decodedLog) {
+          continue;
+        }
 
         events.push({
           signature: transaction.signature,
