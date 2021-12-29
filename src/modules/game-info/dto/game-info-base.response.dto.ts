@@ -7,7 +7,7 @@ export class GameInfoBaseResponse {
   name: string;
 
   @ApiProperty({
-    example: 'https://cdn.axieinfinity.com/landing-page/_next/static/images/logo-f3b5c962671a2516bc9fef42ad9e9145.webp',
+    example: 'https://cdn.axieinfinity.com/website/final.webm',
   })
   @AutoMap()
   videoIntroURL: string;

@@ -59,7 +59,8 @@ import { UserModule } from './modules/user/user.module';
     GsRequestHistoryModule,
     TreasuryEventConsumerModule,
     ScheduleModule.forRoot(),
-    process.env.NODE_ENV !== 'production' && FakeDataModule && GameServerDummyModule,
+    process.env.NODE_ENV !== 'production' && FakeDataModule,
+    process.env.NODE_ENV !== 'production' && GameServerDummyModule,
   ],
 })
 export class AppModule implements NestModule {
