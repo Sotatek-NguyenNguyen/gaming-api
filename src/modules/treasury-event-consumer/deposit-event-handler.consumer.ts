@@ -15,18 +15,19 @@ export class DepositTreasuryHandlerConsumer {
     concurrency: NUMBER_CORE_CPUS,
   })
   async transcode({ data }: Job<ITreasuryDepositEventConsumerPayload>) {
-    await this.balanceChangeService.handleTreasuryDepositEvent(data);
+    const { notifyGameServer } = await this.balanceChangeService.handleTreasuryDepositEvent(data);
 
-    await this.gsNotifyQueue.add(
-      {
-        event: data.evtName,
-        data: {
-          userAddress: data.userAddress,
-          amount: data.amount,
+    if (notifyGameServer)
+      await this.gsNotifyQueue.add(
+        {
+          event: data.evtName,
+          data: {
+            userAddress: data.userAddress,
+            amount: data.amount,
+          },
         },
-      },
-      { attempts: 5, backoff: 1000 * 60 },
-    );
+        { attempts: 5, backoff: 1000 * 60 },
+      );
   }
 
   @OnQueueCompleted()
