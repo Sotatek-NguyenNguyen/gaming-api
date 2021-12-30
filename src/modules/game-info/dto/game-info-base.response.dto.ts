@@ -54,6 +54,10 @@ export class GameInfoBaseResponse {
   @AutoMap()
   tokenName: string;
 
+  @ApiProperty({ example: '6' })
+  @AutoMap()
+  tokenDecimals: number;
+
   @ApiProperty()
   @AutoMap()
   walletAddress: string;

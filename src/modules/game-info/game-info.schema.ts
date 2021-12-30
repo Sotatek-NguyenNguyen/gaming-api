@@ -55,6 +55,9 @@ export class GameInfo extends BaseMongo {
   tokenAddress?: string;
 
   @AutoMap()
+  tokenDecimals: number;
+
+  @AutoMap()
   programId?: string;
 
   @AutoMap()

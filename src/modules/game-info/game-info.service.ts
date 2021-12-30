@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Redis } from 'ioredis';
 import { Model } from 'mongoose';
 import { GameServerUrlRedisKey } from 'src/common/constant';
-import { ApiConfigService } from '../shared/services';
+import { ApiConfigService, TreasuryGetterService } from '../shared/services';
 import { UpdateGameInfoRequest } from './dto';
 import { GameInfo, GameInfoDocument } from './game-info.schema';
 
@@ -14,6 +14,7 @@ export class GameInfoService implements OnModuleInit {
     @InjectModel(GameInfo.name) readonly model: Model<GameInfoDocument>,
     @InjectRedis() readonly redis: Redis,
     readonly configService: ApiConfigService,
+    readonly treasuryGetterService: TreasuryGetterService,
   ) {}
 
   async onModuleInit() {
@@ -58,6 +59,7 @@ export class GameInfoService implements OnModuleInit {
       tokenAddress: this.configService.mintToken.address,
       tokenCode: this.configService.mintToken.symbol,
       tokenName: this.configService.mintToken.name,
+      tokenDecimals: this.treasuryGetterService.tokenDecimals,
     };
   }
 }
