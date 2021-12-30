@@ -195,7 +195,7 @@ export class BalanceChangeService {
     return this.model.insertMany(entities, { session: dto?.session });
   }
 
-  _genAggregatePipe(unit: string, amount: number) {
+  _genAggregatePipeToStatisticTransaction(amount: number, type: BalanceChangeType) {
     const pipe = [
       {
         $match: {
@@ -205,13 +205,13 @@ export class BalanceChangeService {
               {
                 $dateSubtract: {
                   startDate: '$$NOW',
-                  unit: unit,
+                  unit: 'hour',
                   amount: amount,
                 },
               },
             ],
           },
-          type: BalanceChangeType.Deposit,
+          type: type,
         },
       },
       {
@@ -231,12 +231,36 @@ export class BalanceChangeService {
     return pipe;
   }
   async statisticDeposit() {
-    const [data24hr, daylyData, weekData] = await Promise.all([
-      this.model.aggregate(this._genAggregatePipe('hour', 24)),
-      this.model.aggregate(this._genAggregatePipe('day', 1)),
-      this.model.aggregate(this._genAggregatePipe('week', 1)),
+    const [
+      depositLast24Hours,
+      depositOneDayAgo,
+      depositSevenDayAgo,
+      withdrawnLast24Hours,
+      withdrawnOneDayAgo,
+      withdrawnSevenDayAgo,
+    ] = await Promise.all([
+      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(24, BalanceChangeType.Deposit)),
+      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(48, BalanceChangeType.Deposit)),
+      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(7 * 24, BalanceChangeType.Deposit)),
+      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(24, BalanceChangeType.Withdrawn)),
+      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(48, BalanceChangeType.Withdrawn)),
+      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(7 * 24, BalanceChangeType.Withdrawn)),
     ]);
 
-    return { data24hr: data24hr, daylyData: daylyData, weeklyData: weekData };
+    const tranformStatisticData = (x: any) => {
+      if (!x) return { amount: 0, change: 0 };
+      return x;
+    };
+
+    const data = {
+      depositLast24Hours: tranformStatisticData(depositLast24Hours[0]),
+      depositOneDayAgo: tranformStatisticData(depositOneDayAgo[0]),
+      depositSevenDayAgo: tranformStatisticData(depositSevenDayAgo[0]),
+      withdrawnLast24Hours: tranformStatisticData(withdrawnLast24Hours[0]),
+      withdrawnOneDayAgo: tranformStatisticData(withdrawnOneDayAgo[0]),
+      withdrawnSevenDayAgo: tranformStatisticData(withdrawnSevenDayAgo[0]),
+    };
+
+    return data;
   }
 }
