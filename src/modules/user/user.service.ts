@@ -1,5 +1,6 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
+import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
   ForbiddenException,
@@ -13,14 +14,16 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { BN, web3 } from '@project-serum/anchor';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
+import { Queue } from 'bull';
 import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
-import { UserRole } from 'src/common/constant';
+import { QueueName, TreasuryEventName, UserRole } from 'src/common/constant';
 import { SuccessResponseDto } from 'src/common/dto';
 import { dayjs } from 'src/common/pkg/dayjs';
 import { generateRandomNumber } from 'src/common/utils';
 import { BalanceChangeType } from '../balance-change/balance-change.enum';
 import { BalanceChangeService } from '../balance-change/balance-change.service';
 import { ApiConfigService, TreasuryGetterService } from '../shared/services';
+import { GsAdminGrantDeductNotifyData, GsNotifyConsumerPayload } from '../treasury-event-consumer/interfaces';
 import {
   AdminGrantTokenRequest,
   AdminWithdrawRequest,
@@ -43,6 +46,8 @@ export class UserService {
     readonly treasuryGetterService: TreasuryGetterService,
     @InjectMapper() readonly mapper: Mapper,
     @Inject(forwardRef(() => BalanceChangeService)) readonly balanceChangeService: BalanceChangeService,
+    @InjectQueue(QueueName.GameServerNotify)
+    readonly gsNotifyQueue: Queue<GsNotifyConsumerPayload<GsAdminGrantDeductNotifyData>>,
   ) {}
 
   @Cron(CronExpression.EVERY_30_MINUTES)
@@ -337,7 +342,7 @@ export class UserService {
 
   async _adminGrantOrDeductToken(
     { amount, userAddress, note }: AdminGrantTokenRequest,
-    type: BalanceChangeType,
+    type: BalanceChangeType.AdminGrant | BalanceChangeType.AdminDeduct,
   ): Promise<SuccessResponseDto> {
     await this.checkUserExistByAddress(userAddress);
 
@@ -369,6 +374,20 @@ export class UserService {
     );
 
     await session.endSession();
+
+    this.gsNotifyQueue.add(
+      {
+        event:
+          type === BalanceChangeType.AdminDeduct
+            ? TreasuryEventName.AdminDeductTokenEvent
+            : TreasuryEventName.AdminGrantTokenEvent,
+        data: {
+          userAddress,
+          amount: String(amount),
+        },
+      },
+      { attempts: 5, backoff: 1000 * 60 },
+    );
 
     return { success: true };
   }

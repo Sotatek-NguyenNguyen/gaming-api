@@ -37,7 +37,16 @@ export class GsNftTransferNotifyData {
   gameItemId: string;
 }
 
-@ApiExtraModels(GsDepositWithdrawNotifyData, GsMintNftNotifyData, GsNftTransferNotifyData)
+@ApiExtraModels()
+export class GsAdminGrantDeductNotifyData {
+  @ApiProperty()
+  userAddress: string;
+
+  @ApiProperty()
+  amount: string;
+}
+
+@ApiExtraModels(GsDepositWithdrawNotifyData, GsMintNftNotifyData, GsNftTransferNotifyData, GsAdminGrantDeductNotifyData)
 export class GsNotifyConsumerPayload<T = GsDepositWithdrawNotifyData> {
   @ApiProperty({ enum: TreasuryEventName })
   event: TreasuryEventName;
@@ -47,6 +56,7 @@ export class GsNotifyConsumerPayload<T = GsDepositWithdrawNotifyData> {
       { $ref: getSchemaPath(GsDepositWithdrawNotifyData) },
       { $ref: getSchemaPath(GsMintNftNotifyData) },
       { $ref: getSchemaPath(GsNftTransferNotifyData) },
+      { $ref: getSchemaPath(GsAdminGrantDeductNotifyData) },
     ],
   })
   data: T;
