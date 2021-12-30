@@ -42,4 +42,14 @@ export class AdminBalanceChangeController {
   getCurrentUserBalancesChanges(@Query() query: AdminListUserInGameBalanceChangeHistoryQuery) {
     return this.balanceChangeService.listInGameBcHistory(query);
   }
+
+  @Get('/current-statistic-deposit')
+  @ApiOperation({
+    operationId: 'Get dayly,weekly deposit statistic',
+    description: 'Get dayly,weekly deposit statistic by admin',
+  })
+  @ApiOkResponse({})
+  getCurrentStatisticDeposit() {
+    return this.balanceChangeService.statisticDeposit();
+  }
 }

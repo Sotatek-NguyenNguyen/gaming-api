@@ -194,4 +194,49 @@ export class BalanceChangeService {
   insertMany(entities: AnyKeys<BalanceChange>[], dto?: { session?: ClientSession }) {
     return this.model.insertMany(entities, { session: dto?.session });
   }
+
+  _genAggregatePipe(unit: string, amount: number) {
+    const pipe = [
+      {
+        $match: {
+          $expr: {
+            $gt: [
+              '$createdAt',
+              {
+                $dateSubtract: {
+                  startDate: '$$NOW',
+                  unit: unit,
+                  amount: amount,
+                },
+              },
+            ],
+          },
+          type: BalanceChangeType.Deposit,
+        },
+      },
+      {
+        $group: {
+          _id: '$type',
+          amount: { $sum: '$amount' },
+          change: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ];
+
+    return pipe;
+  }
+  async statisticDeposit() {
+    const [data24hr, daylyData, weekData] = await Promise.all([
+      this.model.aggregate(this._genAggregatePipe('hour', 24)),
+      this.model.aggregate(this._genAggregatePipe('day', 1)),
+      this.model.aggregate(this._genAggregatePipe('week', 1)),
+    ]);
+
+    return { data24hr: data24hr, daylyData: daylyData, weeklyData: weekData };
+  }
 }
