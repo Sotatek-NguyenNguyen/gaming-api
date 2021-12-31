@@ -13,11 +13,11 @@ export class NftItem extends BaseMongo {
   @AutoMap()
   userAddress: string;
 
-  @Prop({ required: true, index: true })
+  @Prop({ required: true, unique: true })
   @AutoMap()
-  referenceId: string;
+  gameItemId: string;
 
-  @Prop({ index: true })
+  @Prop({ unique: true })
   @AutoMap()
   address?: string;
 }
