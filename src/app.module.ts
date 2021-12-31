@@ -60,7 +60,7 @@ import { UserModule } from './modules/user/user.module';
     GsRequestHistoryModule,
     TreasuryEventConsumerModule,
     ScheduleModule.forRoot(),
-    OtpModule,
+    // OtpModule,
     process.env.NODE_ENV !== 'production' && FakeDataModule,
     process.env.NODE_ENV !== 'production' && GameServerDummyModule,
   ],
