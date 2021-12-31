@@ -14,7 +14,7 @@ import { UserService } from './user.service';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => BalanceChangeModule),
   ],
-  providers: [UserService, UserMapper, UserModule],
+  providers: [UserService, UserMapper],
   controllers: [MyBalanceController, AdminUserController, GsBalanceController, AdminGameBalanceController],
   exports: [UserService],
 })

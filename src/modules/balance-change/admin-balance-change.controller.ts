@@ -10,7 +10,7 @@ import {
   BalanceChangesResponse,
   ListBalanceChangesResponse,
 } from './dto';
-import { overviewStatistic } from './dto/get-statistic-overview.response';
+import { OverviewStatistic } from './dto/get-statistic-overview.response';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -50,7 +50,7 @@ export class AdminBalanceChangeController {
     description: 'Get dayly,weekly deposit/withdrawn statistic by admin',
   })
   @ApiOkResponse({
-    type: overviewStatistic,
+    type: OverviewStatistic,
   })
   getOverviewStatistic() {
     return this.balanceChangeService.overviewStatistic();

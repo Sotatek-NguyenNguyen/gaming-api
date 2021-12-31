@@ -1,4 +1,3 @@
-import { AutoMap } from '@automapper/classes';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class StatisticData {
@@ -9,12 +8,11 @@ class StatisticData {
   change: number;
 }
 
-export class overviewStatistic {
+export class OverviewStatistic {
   @ApiProperty()
   depositLast24Hours: StatisticData;
 
   @ApiProperty()
-  @AutoMap()
   depositOneDayAgo: StatisticData;
 
   @ApiProperty()

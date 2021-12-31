@@ -1,5 +1,5 @@
 import { User, UserDocument } from '../user/user.schema';
-import { UserRole } from './../../common/constant';
+import { TimeToHours, UserRole } from 'src/common/constant';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
@@ -219,7 +219,7 @@ export class BalanceChangeService {
       },
       {
         $group: {
-          _id: '$type',
+          _id: null,
           amount: { $sum: '$amount' },
           change: { $sum: 1 },
         },
@@ -243,12 +243,24 @@ export class BalanceChangeService {
       withdrawnOneDayAgo,
       withdrawnSevenDaysAgo,
     ] = await Promise.all([
-      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(24, BalanceChangeType.Deposit)),
-      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(48, BalanceChangeType.Deposit)),
-      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(7 * 24, BalanceChangeType.Deposit)),
-      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(24, BalanceChangeType.Withdrawn)),
-      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(48, BalanceChangeType.Withdrawn)),
-      this.model.aggregate(this._genAggregatePipeToStatisticTransaction(7 * 24, BalanceChangeType.Withdrawn)),
+      this.model.aggregate(
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.Last24Hours, BalanceChangeType.Deposit),
+      ),
+      this.model.aggregate(
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.OneDayAgo, BalanceChangeType.Deposit),
+      ),
+      this.model.aggregate(
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.SevenDaysAgo, BalanceChangeType.Deposit),
+      ),
+      this.model.aggregate(
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.Last24Hours, BalanceChangeType.Withdrawn),
+      ),
+      this.model.aggregate(
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.OneDayAgo, BalanceChangeType.Withdrawn),
+      ),
+      this.model.aggregate(
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.SevenDaysAgo, BalanceChangeType.Withdrawn),
+      ),
     ]);
 
     const userStatistic = await this.userService.overviewStatistic();

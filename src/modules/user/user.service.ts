@@ -14,7 +14,7 @@ import { BN, web3 } from '@project-serum/anchor';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
-import { UserRole } from 'src/common/constant';
+import { TimeToHours, UserRole } from 'src/common/constant';
 import { SuccessResponseDto } from 'src/common/dto';
 import { dayjs } from 'src/common/pkg/dayjs';
 import { generateRandomNumber, tranformNullToStatisticData } from 'src/common/utils';
@@ -407,7 +407,7 @@ export class UserService {
       },
       {
         $group: {
-          _id: '$role',
+          _id: null,
           amount: { $sum: '$balance' },
           change: { $sum: 1 },
         },
@@ -418,14 +418,15 @@ export class UserService {
         },
       },
     ];
+
     return pipe;
   }
 
   async overviewStatistic() {
     const [newUserLast24Hours, newUserOneDayAgo, newUserSevenDaysAgo] = await Promise.all([
-      this.model.aggregate(this._genAggregatePipeToStatisticUser(24)),
-      this.model.aggregate(this._genAggregatePipeToStatisticUser(48)),
-      this.model.aggregate(this._genAggregatePipeToStatisticUser(7 * 24)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.Last24Hours)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.OneDayAgo)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.SevenDaysAgo)),
     ]);
     return {
       newUserLast24Hours: tranformNullToStatisticData(newUserLast24Hours[0]),
