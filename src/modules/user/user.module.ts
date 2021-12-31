@@ -1,5 +1,7 @@
+import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { QueueName } from 'src/common/constant';
 import { BalanceChangeModule } from '../balance-change/balance-change.module';
 import { AdminGameBalanceController } from './admin-game-balance.controller';
 import { AdminUserController } from './admin-user.controller';
@@ -13,6 +15,9 @@ import { UserService } from './user.service';
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => BalanceChangeModule),
+    BullModule.registerQueue({
+      name: QueueName.GameServerNotify,
+    }),
   ],
   providers: [UserService, UserMapper],
   controllers: [MyBalanceController, AdminUserController, GsBalanceController, AdminGameBalanceController],

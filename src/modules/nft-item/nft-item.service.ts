@@ -16,7 +16,7 @@ export class NftItemService {
     const [data, total] = await Promise.all([
       this.model
         .find(query)
-        .sort({ _id: 1 })
+        .sort({ _id: -1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean({ virtuals: true }),
@@ -30,7 +30,7 @@ export class NftItemService {
     return this.model.findOne({ address: address }).lean({ virtuals: true });
   }
 
-  _genQueryFromRequestFilter({ userAddress, address }: INftFilter) {
+  _genQueryFromRequestFilter({ userAddress, address, gameItemId }: INftFilter) {
     const query: FilterQuery<NftItemDocument> = {};
 
     if (userAddress) {
@@ -39,6 +39,10 @@ export class NftItemService {
 
     if (address) {
       query.address = address;
+    }
+
+    if (gameItemId) {
+      query.gameItemId = gameItemId;
     }
 
     return query;

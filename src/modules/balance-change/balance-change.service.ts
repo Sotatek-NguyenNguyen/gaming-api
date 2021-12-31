@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
 import { AnyKeys, ClientSession, FilterQuery, Model } from 'mongoose';
-import { TreasuryEventName } from 'src/common/constant';
+import { TreasuryEventName, UserRole } from 'src/common/constant';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { GsRequestHistoryService } from '../gs-request-history/gs-request-history.service';
 import { GsHelperService } from '../shared/services';
@@ -108,12 +108,11 @@ export class BalanceChangeService {
     evtName,
     transactionId,
   }: ITreasuryDepositEventConsumerPayload) {
-    await this.userService.checkUserExistByAddress(userAddress);
+    const user = await this.userService.checkUserExistByAddress(userAddress);
+    const isPlayer = user.role === UserRole.Player;
+    const balanceChangeType = this._getBcTypeFromTreasuryEvent(evtName, isPlayer);
 
     const session = await this.model.startSession();
-
-    const balanceChangeType =
-      evtName === TreasuryEventName.DepositEvent ? BalanceChangeType.Deposit : BalanceChangeType.Withdrawn;
 
     try {
       await session.withTransaction(() =>
@@ -129,23 +128,24 @@ export class BalanceChangeService {
             ],
             { session },
           ),
-          this.userService.bulkUpdateUserBalanceByAddress(
-            [
-              {
-                address: userAddress,
-                amount: +(evtName === TreasuryEventName.DepositEvent ? amount : -amount),
-                balanceChangeType,
-              },
-            ],
-            session,
-          ),
+          isPlayer &&
+            this.userService.bulkUpdateUserBalanceByAddress(
+              [
+                {
+                  address: userAddress,
+                  amount: +(evtName === TreasuryEventName.DepositEvent ? amount : -amount),
+                  balanceChangeType,
+                },
+              ],
+              session,
+            ),
         ]),
       );
     } finally {
       await session.endSession();
     }
 
-    return Promise.resolve('Success');
+    return { notifyGameServer: isPlayer };
   }
 
   async _list(
@@ -166,6 +166,22 @@ export class BalanceChangeService {
     ]);
 
     return { data, page, pageSize, total, totalPage: Math.ceil(total / pageSize) };
+  }
+
+  _getBcTypeFromTreasuryEvent(evtName: TreasuryEventName, isPlayer: boolean) {
+    if (isPlayer && evtName === TreasuryEventName.DepositEvent) {
+      return BalanceChangeType.Deposit;
+    }
+
+    if (isPlayer) {
+      return BalanceChangeType.Withdrawn;
+    }
+
+    if (evtName === TreasuryEventName.DepositEvent) {
+      return BalanceChangeType.AdminDeposit;
+    }
+
+    return BalanceChangeType.AdminWithdraw;
   }
 
   _genQueryFromRequestFilter({ type, fromDate, toDate, transactionId, userAddress }: IBalanceChangesFilter) {

@@ -6,4 +6,6 @@ export interface INftFilter {
   userAddress?: string;
 
   address?: string;
+
+  gameItemId?: string;
 }

@@ -9,7 +9,7 @@ export class NftItemResponse extends BaseResponseDto {
 
   @ApiProperty()
   @AutoMap()
-  referenceId: string;
+  gameItemId: string;
 
   @ApiProperty()
   @AutoMap()

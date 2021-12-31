@@ -31,7 +31,7 @@ export class FakeDataService {
       });
 
       nftEntities.push({
-        referenceId: faker.datatype.uuid(),
+        gameItemId: faker.datatype.uuid(),
         userAddress,
         address: faker.finance.ethereumAddress(),
       });

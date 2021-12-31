@@ -1,3 +1,4 @@
+import { OtpModule } from './modules/otp/otp.module';
 import { classes } from '@automapper/classes';
 import { AutomapperModule } from '@automapper/nestjs';
 import { RedisModule } from '@nestjs-modules/ioredis';
@@ -59,6 +60,7 @@ import { UserModule } from './modules/user/user.module';
     GsRequestHistoryModule,
     TreasuryEventConsumerModule,
     ScheduleModule.forRoot(),
+    OtpModule,
     process.env.NODE_ENV !== 'production' && FakeDataModule,
     process.env.NODE_ENV !== 'production' && GameServerDummyModule,
   ],

@@ -6,10 +6,16 @@ export enum UserRole {
 }
 
 export enum TreasuryEventName {
+  // FROM TREASURY
   DepositEvent = 'DepositEvent',
   WithdrawEvent = 'WithdrawEvent',
   NftRegisterEvent = 'NftRegisterEvent',
   NftTransferEvent = 'NftTransferEvent',
+
+  // INTERNAL, NOT FROM TREASURY
+  // used to send notify to game server
+  AdminGrantTokenEvent = 'AdminGrantTokenEvent',
+  AdminDeductTokenEvent = 'AdminDeductTokenEvent',
 }
 
 export const GameServerUrlRedisKey = {
