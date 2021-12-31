@@ -1,28 +1,72 @@
-import { TimeToHours } from 'src/common/constant';
+import { QueueName, TimeToHours } from 'src/common/constant';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
+import { dayjs } from 'src/common/pkg/dayjs';
 import { AnyKeys, ClientSession, FilterQuery, Model, PipelineStage } from 'mongoose';
 import { TreasuryEventName, UserRole } from 'src/common/constant';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { GsRequestHistoryService } from '../gs-request-history/gs-request-history.service';
-import { GsHelperService } from '../shared/services';
+import { ApiConfigService, GsHelperService } from '../shared/services';
 import { ITreasuryDepositEventConsumerPayload } from '../treasury-event-consumer/interfaces';
 import { UserService } from '../user/user.service';
-import { BalanceChangeType } from './balance-change.enum';
+import { BalanceChangeStatus, BalanceChangeType } from './balance-change.enum';
 import { BalanceChange, BalanceChangeDocument } from './balance-change.schema';
 import { SubmitBalanceChangeRequest } from './dto';
 import { IBalanceChangesFilter } from './interfaces';
 import { tranformNullToStatisticData } from 'src/common/utils';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class BalanceChangeService {
   constructor(
     @InjectModel(BalanceChange.name) readonly model: Model<BalanceChangeDocument>,
-    private readonly gsRequestHistoryService: GsRequestHistoryService,
-    private readonly gsHelperService: GsHelperService,
-    private readonly userService: UserService,
+    readonly gsRequestHistoryService: GsRequestHistoryService,
+    readonly gsHelperService: GsHelperService,
+    readonly userService: UserService,
+    readonly configService: ApiConfigService,
+    @InjectQueue(QueueName.CancelWithdrawTransaction) readonly cancelWithdrawnQueue: Queue<BalanceChange>,
   ) {}
+
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async handleCron() {
+    if (!this.configService.isMasterProcess) {
+      return;
+    }
+
+    let page = 1;
+    const pageSize = 100;
+
+    while (true) {
+      const txs = await this.model
+        .find({
+          type: { $in: [BalanceChangeType.Withdrawn, BalanceChangeType.AdminWithdraw] },
+          status: BalanceChangeStatus.Pending,
+          createdAt: { $lte: dayjs().subtract(2, 'hour').toDate() as unknown as string },
+        })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean({ virtuals: true });
+
+      if (!txs.length) {
+        return;
+      }
+
+      await this.cancelWithdrawnQueue.addBulk(
+        txs.map((tx) => ({
+          data: tx,
+          opts: {
+            attempts: 3,
+            backoff: 1000,
+          },
+        })),
+      );
+
+      page++;
+    }
+  }
 
   listTransactionHistory(filter: IBalanceChangesFilter) {
     return this._list(filter, {
@@ -106,34 +150,61 @@ export class BalanceChangeService {
     userAddress,
     evtName,
     transactionId,
+    withdrawalId,
   }: ITreasuryDepositEventConsumerPayload) {
     const user = await this.userService.checkUserExistByAddress(userAddress);
     const isPlayer = user.role === UserRole.Player;
-    const balanceChangeType = this._getBcTypeFromTreasuryEvent(evtName, isPlayer);
+    let balanceChangeType = this._getBcTypeFromTreasuryEvent(evtName, isPlayer);
+
+    if (withdrawalId) {
+      const withdrawBc = await this.model
+        .findOne({
+          _id: withdrawalId,
+          userAddress,
+        })
+        .lean({ virtuals: true });
+
+      if (!withdrawBc) {
+        return;
+      }
+
+      balanceChangeType = withdrawBc.type;
+    }
 
     const session = await this.model.startSession();
 
     try {
       await session.withTransaction(() =>
         Promise.all([
-          this.model.create(
-            [
-              {
-                userAddress,
-                amount,
-                transactionId,
-                type: balanceChangeType,
-              },
-            ],
-            { session },
-          ),
-          isPlayer &&
+          withdrawalId
+            ? this.model.findOneAndUpdate(
+                {
+                  _id: withdrawalId,
+                },
+                {
+                  $set: {
+                    status: BalanceChangeStatus.Succeed,
+                    transactionId,
+                  },
+                },
+              )
+            : this.model.create(
+                [
+                  {
+                    userAddress,
+                    amount,
+                    transactionId,
+                    type: balanceChangeType,
+                  },
+                ],
+                { session },
+              ),
+          balanceChangeType === BalanceChangeType.Deposit &&
             this.userService.bulkUpdateUserBalanceByAddress(
               [
                 {
                   address: userAddress,
-                  amount: +(evtName === TreasuryEventName.DepositEvent ? amount : -amount),
-                  balanceChangeType,
+                  amount: +amount,
                 },
               ],
               session,
@@ -144,7 +215,10 @@ export class BalanceChangeService {
       await session.endSession();
     }
 
-    return { notifyGameServer: isPlayer };
+    return {
+      notifyGameServer:
+        isPlayer && [BalanceChangeType.Deposit, BalanceChangeType.Withdrawn].includes(balanceChangeType),
+    };
   }
 
   async _list(
@@ -168,6 +242,9 @@ export class BalanceChangeService {
   }
 
   _getBcTypeFromTreasuryEvent(evtName: TreasuryEventName, isPlayer: boolean) {
+    // WARNING:
+    // In new logic, we dont need to check for event withdrawn
+    // But for compatibility with old code of smart contract, cant delete redundant code at least for now
     if (isPlayer && evtName === TreasuryEventName.DepositEvent) {
       return BalanceChangeType.Deposit;
     }
@@ -211,6 +288,10 @@ export class BalanceChangeService {
 
   insertMany(entities: AnyKeys<BalanceChange>[], dto?: { session?: ClientSession }) {
     return this.model.insertMany(entities, { session: dto?.session });
+  }
+
+  create(entity: AnyKeys<BalanceChange>) {
+    return this.model.create(entity);
   }
 
   _genAggregatePipeToStatisticTransaction(amount: number, type: BalanceChangeType) {

@@ -174,13 +174,17 @@ export type Treasury = {
           type: 'publicKey';
         },
         {
+          name: 'withdrawalId';
+          type: 'string';
+        },
+        {
           name: 'amount';
           type: 'u64';
         },
       ];
     },
     {
-      name: 'nftMint';
+      name: 'nftRegister';
       accounts: [
         {
           name: 'owner';
@@ -198,37 +202,17 @@ export type Treasury = {
           isSigner: false;
         },
         {
-          name: 'nftId';
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: 'receiverUser';
+          name: 'userTokenAccount';
           isMut: false;
           isSigner: false;
         },
         {
-          name: 'receiverTokenAccount';
-          isMut: true;
+          name: 'nft';
+          isMut: false;
           isSigner: false;
         },
         {
           name: 'systemProgram';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'tokenProgram';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'rent';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'associatedTokenProgram';
           isMut: false;
           isSigner: false;
         },
@@ -327,6 +311,16 @@ export type Treasury = {
           index: true;
         },
         {
+          name: 'sender';
+          type: 'publicKey';
+          index: false;
+        },
+        {
+          name: 'withdrawalId';
+          type: 'string';
+          index: false;
+        },
+        {
           name: 'gameId';
           type: 'publicKey';
           index: false;
@@ -349,7 +343,7 @@ export type Treasury = {
       ];
     },
     {
-      name: 'NftMintEvent';
+      name: 'NftRegisterEvent';
       fields: [
         {
           name: 'user';
@@ -377,6 +371,13 @@ export type Treasury = {
           index: false;
         },
       ];
+    },
+  ];
+  errors: [
+    {
+      code: 6000;
+      name: 'InvalidOwner';
+      msg: 'Invalid owner';
     },
   ];
 };
@@ -557,13 +558,17 @@ export const IDL: Treasury = {
           type: 'publicKey',
         },
         {
+          name: 'withdrawalId',
+          type: 'string',
+        },
+        {
           name: 'amount',
           type: 'u64',
         },
       ],
     },
     {
-      name: 'nftMint',
+      name: 'nftRegister',
       accounts: [
         {
           name: 'owner',
@@ -581,37 +586,17 @@ export const IDL: Treasury = {
           isSigner: false,
         },
         {
-          name: 'nftId',
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: 'receiverUser',
+          name: 'userTokenAccount',
           isMut: false,
           isSigner: false,
         },
         {
-          name: 'receiverTokenAccount',
-          isMut: true,
+          name: 'nft',
+          isMut: false,
           isSigner: false,
         },
         {
           name: 'systemProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'tokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'rent',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'associatedTokenProgram',
           isMut: false,
           isSigner: false,
         },
@@ -710,6 +695,16 @@ export const IDL: Treasury = {
           index: true,
         },
         {
+          name: 'sender',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'withdrawalId',
+          type: 'string',
+          index: false,
+        },
+        {
           name: 'gameId',
           type: 'publicKey',
           index: false,
@@ -732,7 +727,7 @@ export const IDL: Treasury = {
       ],
     },
     {
-      name: 'NftMintEvent',
+      name: 'NftRegisterEvent',
       fields: [
         {
           name: 'user',
@@ -760,6 +755,13 @@ export const IDL: Treasury = {
           index: false,
         },
       ],
+    },
+  ],
+  errors: [
+    {
+      code: 6000,
+      name: 'InvalidOwner',
+      msg: 'Invalid owner',
     },
   ],
 };

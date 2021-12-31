@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 import { BaseMongo } from 'src/common/dto';
 import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
 import { BaseSchema } from 'src/decorators';
-import { BalanceChangeType } from './balance-change.enum';
+import { BalanceChangeStatus, BalanceChangeType } from './balance-change.enum';
 
 export type BalanceChangeDocument = BalanceChange & Document;
 
@@ -21,6 +21,10 @@ export class BalanceChange extends BaseMongo {
   @Prop({ enum: BalanceChangeType, required: true, index: true })
   @AutoMap()
   type: BalanceChangeType;
+
+  @Prop({ enum: BalanceChangeStatus, default: BalanceChangeStatus.Succeed, index: true })
+  @AutoMap()
+  status?: BalanceChangeStatus;
 
   @Prop({ index: true })
   @AutoMap()
