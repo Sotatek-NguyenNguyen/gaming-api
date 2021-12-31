@@ -156,6 +156,8 @@ export class BalanceChangeService {
     const isPlayer = user.role === UserRole.Player;
     let balanceChangeType = this._getBcTypeFromTreasuryEvent(evtName, isPlayer);
 
+    console.log('==========', evtName, withdrawalId);
+
     if (withdrawalId) {
       const withdrawBc = await this.model
         .findOne({
