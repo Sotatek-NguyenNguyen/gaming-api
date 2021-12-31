@@ -10,6 +10,7 @@ import {
   BalanceChangesResponse,
   ListBalanceChangesResponse,
 } from './dto';
+import { OverviewStatistic } from './dto/get-statistic-overview.response';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -41,5 +42,17 @@ export class AdminBalanceChangeController {
   @UseInterceptors(MapListInterceptor(BalanceChangesResponse, BalanceChange))
   getCurrentUserBalancesChanges(@Query() query: AdminListUserInGameBalanceChangeHistoryQuery) {
     return this.balanceChangeService.listInGameBcHistory(query);
+  }
+
+  @Get('/overview-statistic')
+  @ApiOperation({
+    operationId: 'Get dayly,weekly deposit/withdrawn statistic',
+    description: 'Get dayly,weekly deposit/withdrawn statistic by admin',
+  })
+  @ApiOkResponse({
+    type: OverviewStatistic,
+  })
+  getOverviewStatistic() {
+    return this.balanceChangeService.overviewStatistic();
   }
 }

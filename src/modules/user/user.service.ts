@@ -16,10 +16,10 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/sp
 import { PublicKey } from '@solana/web3.js';
 import { Queue } from 'bull';
 import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
-import { QueueName, TreasuryEventName, UserRole } from 'src/common/constant';
+import { QueueName, TimeToHours, TreasuryEventName, UserRole } from 'src/common/constant';
 import { SuccessResponseDto } from 'src/common/dto';
 import { dayjs } from 'src/common/pkg/dayjs';
-import { generateRandomNumber } from 'src/common/utils';
+import { generateRandomNumber, tranformNullToStatisticData } from 'src/common/utils';
 import { BalanceChangeType } from '../balance-change/balance-change.enum';
 import { BalanceChangeService } from '../balance-change/balance-change.service';
 import { ApiConfigService, TreasuryGetterService } from '../shared/services';
@@ -404,5 +404,53 @@ export class UserService {
     }
 
     return query;
+  }
+  _genAggregatePipeToStatisticUser(amount: number) {
+    const pipe = [
+      {
+        $match: {
+          $expr: {
+            $gt: [
+              '$createdAt',
+              {
+                $dateSubtract: {
+                  startDate: '$$NOW',
+                  unit: 'hour',
+                  amount: amount,
+                },
+              },
+            ],
+          },
+          role: UserRole.Player,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          amount: { $sum: '$balance' },
+          change: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ];
+
+    return pipe;
+  }
+
+  async overviewStatistic() {
+    const [newUserLast24Hours, newUserOneDayAgo, newUserSevenDaysAgo] = await Promise.all([
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.Last24Hours)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.OneDayAgo)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.SevenDaysAgo)),
+    ]);
+    return {
+      newUserLast24Hours: tranformNullToStatisticData(newUserLast24Hours[0]),
+      newUserOneDayAgo: tranformNullToStatisticData(newUserOneDayAgo[0]),
+      newUserSevenDaysAgo: tranformNullToStatisticData(newUserSevenDaysAgo[0]),
+    };
   }
 }
