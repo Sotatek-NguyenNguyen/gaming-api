@@ -15,7 +15,7 @@ import { BN, web3 } from '@project-serum/anchor';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { Queue } from 'bull';
-import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
+import { ClientSession, FilterQuery, Model, PipelineStage, UpdateQuery } from 'mongoose';
 import { QueueName, TimeToHours, TreasuryEventName, UserRole } from 'src/common/constant';
 import { SuccessResponseDto } from 'src/common/dto';
 import { dayjs } from 'src/common/pkg/dayjs';
@@ -406,7 +406,7 @@ export class UserService {
     return query;
   }
   _genAggregatePipeToStatisticUser(amount: number) {
-    const pipe = [
+    const pipe: PipelineStage[] = [
       {
         $match: {
           $expr: {

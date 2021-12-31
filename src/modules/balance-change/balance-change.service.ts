@@ -1,9 +1,8 @@
-import { User, UserDocument } from '../user/user.schema';
-import { TimeToHours, UserRole } from 'src/common/constant';
+import { TimeToHours } from 'src/common/constant';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
-import { AnyKeys, ClientSession, FilterQuery, Model } from 'mongoose';
+import { AnyKeys, ClientSession, FilterQuery, Model, PipelineStage } from 'mongoose';
 import { TreasuryEventName, UserRole } from 'src/common/constant';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { GsRequestHistoryService } from '../gs-request-history/gs-request-history.service';
@@ -215,7 +214,7 @@ export class BalanceChangeService {
   }
 
   _genAggregatePipeToStatisticTransaction(amount: number, type: BalanceChangeType) {
-    const pipe = [
+    const pipe: PipelineStage[] = [
       {
         $match: {
           $expr: {
