@@ -1,3 +1,5 @@
+import { User, UserDocument } from '../user/user.schema';
+import { UserRole } from './../../common/constant';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
@@ -12,6 +14,7 @@ import { BalanceChangeType } from './balance-change.enum';
 import { BalanceChange, BalanceChangeDocument } from './balance-change.schema';
 import { SubmitBalanceChangeRequest } from './dto';
 import { IBalanceChangesFilter } from './interfaces';
+import { tranformNullToStatisticData } from 'src/common/utils';
 
 @Injectable()
 export class BalanceChangeService {
@@ -230,14 +233,15 @@ export class BalanceChangeService {
 
     return pipe;
   }
-  async statisticDeposit() {
+
+  async overviewStatistic() {
     const [
       depositLast24Hours,
       depositOneDayAgo,
-      depositSevenDayAgo,
+      depositSevenDaysAgo,
       withdrawnLast24Hours,
       withdrawnOneDayAgo,
-      withdrawnSevenDayAgo,
+      withdrawnSevenDaysAgo,
     ] = await Promise.all([
       this.model.aggregate(this._genAggregatePipeToStatisticTransaction(24, BalanceChangeType.Deposit)),
       this.model.aggregate(this._genAggregatePipeToStatisticTransaction(48, BalanceChangeType.Deposit)),
@@ -247,18 +251,16 @@ export class BalanceChangeService {
       this.model.aggregate(this._genAggregatePipeToStatisticTransaction(7 * 24, BalanceChangeType.Withdrawn)),
     ]);
 
-    const tranformStatisticData = (x: any) => {
-      if (!x) return { amount: 0, change: 0 };
-      return x;
-    };
+    const userStatistic = await this.userService.overviewStatistic();
 
     const data = {
-      depositLast24Hours: tranformStatisticData(depositLast24Hours[0]),
-      depositOneDayAgo: tranformStatisticData(depositOneDayAgo[0]),
-      depositSevenDayAgo: tranformStatisticData(depositSevenDayAgo[0]),
-      withdrawnLast24Hours: tranformStatisticData(withdrawnLast24Hours[0]),
-      withdrawnOneDayAgo: tranformStatisticData(withdrawnOneDayAgo[0]),
-      withdrawnSevenDayAgo: tranformStatisticData(withdrawnSevenDayAgo[0]),
+      depositLast24Hours: tranformNullToStatisticData(depositLast24Hours[0]),
+      depositOneDayAgo: tranformNullToStatisticData(depositOneDayAgo[0]),
+      depositSevenDaysAgo: tranformNullToStatisticData(depositSevenDaysAgo[0]),
+      withdrawnLast24Hours: tranformNullToStatisticData(withdrawnLast24Hours[0]),
+      withdrawnOneDayAgo: tranformNullToStatisticData(withdrawnOneDayAgo[0]),
+      withdrawnSevenDaysAgo: tranformNullToStatisticData(withdrawnSevenDaysAgo[0]),
+      ...userStatistic,
     };
 
     return data;

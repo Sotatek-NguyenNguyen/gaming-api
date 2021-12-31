@@ -15,3 +15,8 @@ export const sleep = (time: number) => new Promise((resolve) => setTimeout(resol
 export const isArrayNotEmpty = (arr) => Array.isArray(arr) && arr.length;
 
 export const generateRandomNumber = () => Math.round(Math.random() * 10000);
+
+export const tranformNullToStatisticData = (x: any) => {
+  if (!x) return { amount: 0, change: 0 };
+  return x;
+};

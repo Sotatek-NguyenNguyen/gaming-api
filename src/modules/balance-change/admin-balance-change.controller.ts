@@ -10,7 +10,7 @@ import {
   BalanceChangesResponse,
   ListBalanceChangesResponse,
 } from './dto';
-import { TransactionStatistic } from './dto/get-statistic-transaction-history.response';
+import { overviewStatistic } from './dto/get-statistic-overview.response';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -44,15 +44,15 @@ export class AdminBalanceChangeController {
     return this.balanceChangeService.listInGameBcHistory(query);
   }
 
-  @Get('/current-statistic-deposit')
+  @Get('/overview-statistic')
   @ApiOperation({
     operationId: 'Get dayly,weekly deposit/withdrawn statistic',
     description: 'Get dayly,weekly deposit/withdrawn statistic by admin',
   })
   @ApiOkResponse({
-    type: TransactionStatistic,
+    type: overviewStatistic,
   })
-  getCurrentStatisticDeposit() {
-    return this.balanceChangeService.statisticDeposit();
+  getOverviewStatistic() {
+    return this.balanceChangeService.overviewStatistic();
   }
 }

@@ -17,7 +17,7 @@ import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { UserRole } from 'src/common/constant';
 import { SuccessResponseDto } from 'src/common/dto';
 import { dayjs } from 'src/common/pkg/dayjs';
-import { generateRandomNumber } from 'src/common/utils';
+import { generateRandomNumber, tranformNullToStatisticData } from 'src/common/utils';
 import { BalanceChangeType } from '../balance-change/balance-change.enum';
 import { BalanceChangeService } from '../balance-change/balance-change.service';
 import { ApiConfigService, TreasuryGetterService } from '../shared/services';
@@ -385,5 +385,52 @@ export class UserService {
     }
 
     return query;
+  }
+  _genAggregatePipeToStatisticUser(amount: number) {
+    const pipe = [
+      {
+        $match: {
+          $expr: {
+            $gt: [
+              '$createdAt',
+              {
+                $dateSubtract: {
+                  startDate: '$$NOW',
+                  unit: 'hour',
+                  amount: amount,
+                },
+              },
+            ],
+          },
+          role: UserRole.Player,
+        },
+      },
+      {
+        $group: {
+          _id: '$role',
+          amount: { $sum: '$balance' },
+          change: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ];
+    return pipe;
+  }
+
+  async overviewStatistic() {
+    const [newUserLast24Hours, newUserOneDayAgo, newUserSevenDaysAgo] = await Promise.all([
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(24)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(48)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(7 * 24)),
+    ]);
+    return {
+      newUserLast24Hours: tranformNullToStatisticData(newUserLast24Hours[0]),
+      newUserOneDayAgo: tranformNullToStatisticData(newUserOneDayAgo[0]),
+      newUserSevenDaysAgo: tranformNullToStatisticData(newUserSevenDaysAgo[0]),
+    };
   }
 }
