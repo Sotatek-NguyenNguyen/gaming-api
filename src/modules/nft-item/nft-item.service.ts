@@ -4,6 +4,7 @@ import { AnyKeys, FilterQuery, Model } from 'mongoose';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { INftFilter } from './interfaces';
 import { NftItem, NftItemDocument } from './nft-item.schema';
+import { sleep } from 'src/common/utils';
 
 @Injectable()
 export class NftItemService {
@@ -50,5 +51,33 @@ export class NftItemService {
 
   insertMany(entities: AnyKeys<NftItem>[]) {
     return this.model.insertMany(entities);
+  }
+
+  async nftItemScan() {
+    const innerFunction = async () => {
+      const pageSize = 10;
+      let page = 1;
+
+      while (true) {
+        const nfts = await this.model
+          .find()
+          .skip((page - 1) * pageSize)
+          .limit(pageSize)
+          .lean({ virtuals: true });
+        console.log(nfts);
+
+        if (nfts.length < pageSize) {
+          page = 1;
+          break;
+        } else {
+          page++;
+        }
+      }
+    };
+
+    while (true) {
+      await innerFunction();
+      await sleep(5 * 1000);
+    }
   }
 }
