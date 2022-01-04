@@ -19,7 +19,7 @@ import { SharedModule } from './modules/shared/shared.module';
 import { TreasuryEventConsumerModule } from './modules/treasury-event-consumer/treasury-event-consumer.module';
 import { TreasuryModule } from './modules/treasury/treasury.module';
 import { UserModule } from './modules/user/user.module';
-import { OtpModule } from './modules/otp/token.module';
+import { OtpModule } from './modules/otp/otp.module';
 
 @Module({
   imports: [
