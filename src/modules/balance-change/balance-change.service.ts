@@ -1,10 +1,9 @@
 import { User, UserDocument } from '../user/user.schema';
-import { TimeToHours, UserRole } from 'src/common/constant';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
 import { AnyKeys, ClientSession, FilterQuery, Model } from 'mongoose';
-import { TreasuryEventName, UserRole } from 'src/common/constant';
+import { TimeToHours, TreasuryEventName, UserRole } from 'src/common/constant';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { GsRequestHistoryService } from '../gs-request-history/gs-request-history.service';
 import { GsHelperService } from '../shared/services';
@@ -253,29 +252,29 @@ export class BalanceChangeService {
   async overviewStatistic() {
     const [
       depositLast24Hours,
-      depositOneDayAgo,
       depositSevenDaysAgo,
+      depositLast30Days,
       withdrawnLast24Hours,
-      withdrawnOneDayAgo,
       withdrawnSevenDaysAgo,
+      withdrawnLast30Days,
     ] = await Promise.all([
       this.model.aggregate(
         this._genAggregatePipeToStatisticTransaction(TimeToHours.Last24Hours, BalanceChangeType.Deposit),
       ),
       this.model.aggregate(
-        this._genAggregatePipeToStatisticTransaction(TimeToHours.OneDayAgo, BalanceChangeType.Deposit),
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.SevenDaysAgo, BalanceChangeType.Deposit),
       ),
       this.model.aggregate(
-        this._genAggregatePipeToStatisticTransaction(TimeToHours.SevenDaysAgo, BalanceChangeType.Deposit),
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.Last30Days, BalanceChangeType.Deposit),
       ),
       this.model.aggregate(
         this._genAggregatePipeToStatisticTransaction(TimeToHours.Last24Hours, BalanceChangeType.Withdrawn),
       ),
       this.model.aggregate(
-        this._genAggregatePipeToStatisticTransaction(TimeToHours.OneDayAgo, BalanceChangeType.Withdrawn),
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.SevenDaysAgo, BalanceChangeType.Withdrawn),
       ),
       this.model.aggregate(
-        this._genAggregatePipeToStatisticTransaction(TimeToHours.SevenDaysAgo, BalanceChangeType.Withdrawn),
+        this._genAggregatePipeToStatisticTransaction(TimeToHours.Last30Days, BalanceChangeType.Withdrawn),
       ),
     ]);
 
@@ -283,11 +282,11 @@ export class BalanceChangeService {
 
     const data = {
       depositLast24Hours: tranformNullToStatisticData(depositLast24Hours[0]),
-      depositOneDayAgo: tranformNullToStatisticData(depositOneDayAgo[0]),
       depositSevenDaysAgo: tranformNullToStatisticData(depositSevenDaysAgo[0]),
+      depositLast30Days: tranformNullToStatisticData(depositLast30Days[0]),
       withdrawnLast24Hours: tranformNullToStatisticData(withdrawnLast24Hours[0]),
-      withdrawnOneDayAgo: tranformNullToStatisticData(withdrawnOneDayAgo[0]),
       withdrawnSevenDaysAgo: tranformNullToStatisticData(withdrawnSevenDaysAgo[0]),
+      withdrawnLast30Days: tranformNullToStatisticData(withdrawnLast30Days[0]),
       ...userStatistic,
     };
 

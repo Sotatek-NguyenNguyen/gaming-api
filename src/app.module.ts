@@ -1,4 +1,3 @@
-import { OtpModule } from './modules/otp/otp.module';
 import { classes } from '@automapper/classes';
 import { AutomapperModule } from '@automapper/nestjs';
 import { RedisModule } from '@nestjs-modules/ioredis';
@@ -20,6 +19,7 @@ import { SharedModule } from './modules/shared/shared.module';
 import { TreasuryEventConsumerModule } from './modules/treasury-event-consumer/treasury-event-consumer.module';
 import { TreasuryModule } from './modules/treasury/treasury.module';
 import { UserModule } from './modules/user/user.module';
+import { OtpModule } from './modules/otp/token.module';
 
 @Module({
   imports: [
@@ -59,8 +59,8 @@ import { UserModule } from './modules/user/user.module';
     AuthModule,
     GsRequestHistoryModule,
     TreasuryEventConsumerModule,
-    ScheduleModule.forRoot(),
     OtpModule,
+    ScheduleModule.forRoot(),
     process.env.NODE_ENV !== 'production' && FakeDataModule,
     process.env.NODE_ENV !== 'production' && GameServerDummyModule,
   ],

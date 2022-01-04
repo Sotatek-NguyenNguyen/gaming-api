@@ -32,6 +32,6 @@ export const NUMBER_CORE_CPUS = cpus().length;
 
 export const TimeToHours = {
   Last24Hours: 24,
-  OneDayAgo: 48,
   SevenDaysAgo: 7 * 24,
+  Last30Days: 30 * 24,
 };

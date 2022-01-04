@@ -3,7 +3,6 @@ import { Body, Controller, Get, Param, Post, UseInterceptors } from '@nestjs/com
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiHeaderGsGet } from 'src/decorators';
 import { GsAuthorize } from 'src/decorators/gs-authorize.decorator';
-// import { UserResponse } from './dto';
 import { Otp } from './otp.schema';
 import { OtpService } from './otp.service';
 

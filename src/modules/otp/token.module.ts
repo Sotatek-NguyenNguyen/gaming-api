@@ -14,6 +14,5 @@ import { GsRequestHistoryModule } from '../gs-request-history/gs-request-history
   ],
   providers: [OtpService],
   controllers: [GsOtpController],
-  exports: [OtpService],
 })
 export class OtpModule {}
