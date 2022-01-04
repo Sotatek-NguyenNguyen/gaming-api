@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { AnyKeys, FilterQuery, Model } from 'mongoose';
-import { Client } from 'jayson';
+import { Client, JSONRPCErrorLike, JSONRPCRequest } from 'jayson';
+import { URL } from 'url';
 import { IDataWithPagination } from 'src/common/interfaces';
 import { INftFilter } from './interfaces';
 import { NftItem, NftItemDocument } from './nft-item.schema';
@@ -10,10 +11,10 @@ import { ApiConfigService } from '../shared/services';
 
 @Injectable()
 export class NftItemService {
-  private jaysonClient: Client;
+  private jsonRpcClient: Client;
 
   constructor(@InjectModel(NftItem.name) readonly model: Model<NftItemDocument>, configService: ApiConfigService) {
-    this.jaysonClient = Client.https({ host: 'api.devnet.solana.com' });
+    this.jsonRpcClient = Client.https({ host: new URL(configService.blockchain.rpcEndpoint).hostname });
   }
 
   async list(filter: INftFilter): Promise<IDataWithPagination<NftItem>> {
@@ -77,15 +78,10 @@ export class NftItemService {
 
         const nftIds = nfts.map((nft) => nft.address);
         const batch = nftIds.map((nftId) =>
-          this.jaysonClient.request('getTokenLargestAccounts', [nftId, { commitment: 'finalized' }]),
+          this.jsonRpcClient.request('getTokenLargestAccounts', [nftId, { commitment: 'finalized' }]),
         );
-        await this.jaysonClient.request(batch, function (err, errors, successes) {
-          if (err) throw err;
-          console.log('errors', errors); // array of requests that errored
-          console.log('successes', successes); // array of requests that succeeded
-        });
-        // const info = await this.finalizeConnection.getTokenLargestAccounts(new PublicKey(nft.address));
-        // console.log(info);
+        const { successes } = await this._asyncBatchRequest(batch);
+        console.log(successes);
 
         if (nfts.length < pageSize) {
           page = 1;
@@ -100,5 +96,16 @@ export class NftItemService {
       await innerFunction();
       await sleep(60 * 1000);
     }
+  }
+
+  private async _asyncBatchRequest(batch: JSONRPCRequest[]): Promise<{ successes: any; errors: JSONRPCErrorLike[] }> {
+    return new Promise((resolve, reject) => {
+      this.jsonRpcClient.request(batch, (err, errors, successes) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve({ errors, successes });
+      });
+    });
   }
 }

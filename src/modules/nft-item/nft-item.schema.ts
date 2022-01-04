@@ -13,6 +13,10 @@ export class NftItem extends BaseMongo {
   @AutoMap()
   userAddress: string;
 
+  @Prop({ required: true, default: '' })
+  @AutoMap()
+  userTokenAccount: string;
+
   @Prop({ required: true, unique: true })
   @AutoMap()
   gameItemId: string;
