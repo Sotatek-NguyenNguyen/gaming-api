@@ -7,6 +7,8 @@ export interface IDecodedDepositEventFromTreasury {
     user: PublicKey;
     gameId: PublicKey;
     tokenId: PublicKey;
+    sender: PublicKey;
+    withdrawalId: string;
     amount: BN;
     timestamp: BN;
   };

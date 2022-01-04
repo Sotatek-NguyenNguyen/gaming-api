@@ -26,6 +26,7 @@ export const GameServerUrlRedisKey = {
 export const QueueName = {
   DepositEventHandler: 'deposit-event-handler',
   GameServerNotify: 'gs-notify',
+  CancelWithdrawTransaction: 'cancel-withdraw-transaction',
 };
 
 export const NUMBER_CORE_CPUS = cpus().length;

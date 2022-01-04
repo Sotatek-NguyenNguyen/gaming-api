@@ -26,12 +26,6 @@ export class User extends BaseMongo {
 
   @Prop({ default: 0, min: 0 })
   balance: number;
-
-  @Prop({ default: false })
-  isRequestingWithdraw?: boolean;
-
-  @Prop({})
-  lastRequestWithdrawAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -25,12 +25,7 @@ interface IEvent {
   logIndex: number;
   isError: boolean;
   raw: string;
-  data?: {
-    transactionId: string;
-    evtName: TreasuryEventName;
-    userAddress: string;
-    amount: string;
-  };
+  data?: ITreasuryDepositEventConsumerPayload;
 }
 
 @Injectable()
@@ -196,6 +191,8 @@ export class TreasuryEventService {
             evtName: decodedLog.name,
             userAddress: decodedLog.data.user.toBase58(),
             amount: decodedLog.data?.amount?.toString(),
+            withdrawalId: decodedLog.data?.withdrawalId,
+            senderAddress: decodedLog.data?.sender?.toBase58(),
           },
         });
       }
