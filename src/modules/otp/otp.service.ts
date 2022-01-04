@@ -6,7 +6,6 @@ import dayjs from 'dayjs';
 import { ClientSession, FilterQuery, Model } from 'mongoose';
 import { generateRandomNumber } from 'src/common/utils';
 import nacl from 'tweetnacl';
-import { ApiConfigService } from '../shared/services';
 import { UserService } from '../user/user.service';
 // import { ListUserQuery, ListUserResponse, UserResponse } from './dto';
 import { Otp, OtpDocument } from './otp.schema';
@@ -15,7 +14,6 @@ import { Otp, OtpDocument } from './otp.schema';
 export class OtpService {
   constructor(
     @InjectModel(Otp.name) readonly model: Model<OtpDocument>,
-    // readonly configService: ApiConfigService,
     private readonly userService: UserService,
     @InjectMapper() readonly mapper: Mapper,
   ) {}

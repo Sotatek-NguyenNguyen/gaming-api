@@ -13,26 +13,26 @@ export class OverviewStatistic {
   depositLast24Hours: StatisticData;
 
   @ApiProperty()
-  depositOneDayAgo: StatisticData;
+  depositSevenDaysAgo: StatisticData;
 
   @ApiProperty()
-  depositSevenDaysAgo: StatisticData;
+  depositLast30Days: StatisticData;
 
   @ApiProperty()
   withdrawnLast24Hours: StatisticData;
 
   @ApiProperty()
-  withdrawnOneDayAgo: StatisticData;
+  withdrawnSevenDaysAgo: StatisticData;
 
   @ApiProperty()
-  withdrawnSevensDayAgo: StatisticData;
+  withdrawnLast30Days: StatisticData;
 
   @ApiProperty()
   newUserLast24Hours: StatisticData;
 
   @ApiProperty()
-  newUserOneDayAgo: StatisticData;
+  newUserSevenDaysAgo: StatisticData;
 
   @ApiProperty()
-  newUserSevensDayAgo: StatisticData;
+  newUserLast30Days: StatisticData;
 }

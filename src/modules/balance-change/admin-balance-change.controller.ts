@@ -46,8 +46,8 @@ export class AdminBalanceChangeController {
 
   @Get('/overview-statistic')
   @ApiOperation({
-    operationId: 'Get dayly,weekly deposit/withdrawn statistic',
-    description: 'Get dayly,weekly deposit/withdrawn statistic by admin',
+    operationId: 'Get dayly,weekly,last 30 days deposit/withdrawn statistic',
+    description: 'Get dayly,weekly,last 30 days deposit/withdrawn statistic by admin',
   })
   @ApiOkResponse({
     type: OverviewStatistic,

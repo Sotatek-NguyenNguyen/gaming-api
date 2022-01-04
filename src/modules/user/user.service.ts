@@ -444,15 +444,15 @@ export class UserService {
   }
 
   async overviewStatistic() {
-    const [newUserLast24Hours, newUserOneDayAgo, newUserSevenDaysAgo] = await Promise.all([
+    const [newUserLast24Hours, newUserSevenDaysAgo, newUserLast30Days] = await Promise.all([
       this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.Last24Hours)),
-      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.OneDayAgo)),
       this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.SevenDaysAgo)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.Last30Days)),
     ]);
     return {
       newUserLast24Hours: tranformNullToStatisticData(newUserLast24Hours[0]),
-      newUserOneDayAgo: tranformNullToStatisticData(newUserOneDayAgo[0]),
       newUserSevenDaysAgo: tranformNullToStatisticData(newUserSevenDaysAgo[0]),
+      newUserLast30Days: tranformNullToStatisticData(newUserLast30Days[0]),
     };
   }
 }
