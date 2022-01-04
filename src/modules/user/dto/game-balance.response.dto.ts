@@ -5,5 +5,8 @@ export class GameBalanceResponse {
   actualGameBalance: string;
 
   @ApiProperty({ example: 700000 })
-  inGameBalance: string;
+  allocatedInGameBalance: string;
+
+  @ApiProperty({ example: 700000 })
+  unallocatedInGameBalance: string;
 }

@@ -313,22 +313,24 @@ export class UserService {
   }
 
   async adminGetGameBalance(): Promise<GameBalanceResponse> {
-    const [{ balance }, [{ inGameBalance }]] = await Promise.all([
+    const [{ balance }, [{ allocatedInGameBalance }], unallocatedInGameBalance] = await Promise.all([
       this.treasuryGetterService.getTreasuryBalance(),
       this.model.aggregate([
         { $match: { role: UserRole.Player } },
         {
           $group: {
             _id: null,
-            inGameBalance: { $sum: '$balance' },
+            allocatedInGameBalance: { $sum: '$balance' },
           },
         },
       ]),
+      this.balanceChangeService.getUnallocatedGameBalance(),
     ]);
 
     return {
       actualGameBalance: balance,
-      inGameBalance,
+      unallocatedInGameBalance,
+      allocatedInGameBalance,
     };
   }
 

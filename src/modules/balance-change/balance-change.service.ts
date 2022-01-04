@@ -68,6 +68,45 @@ export class BalanceChangeService {
     }
   }
 
+  async getUnallocatedGameBalance() {
+    const res = await this.model.aggregate([
+      {
+        $match: {
+          type: {
+            $in: [
+              BalanceChangeType.AdminDeposit,
+              BalanceChangeType.AdminWithdraw,
+              BalanceChangeType.AdminDeduct,
+              BalanceChangeType.AdminGrant,
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$type' as any,
+          amount: { $sum: '$amount' },
+        },
+      },
+    ]);
+
+    if (!res.length) {
+      return 0;
+    }
+
+    return res.reduce((total: number, { _id, amount }: { _id: BalanceChangeType; amount: number }) => {
+      if ([BalanceChangeType.AdminDeposit, BalanceChangeType.AdminDeduct].includes(_id)) {
+        return total + amount;
+      }
+
+      if ([BalanceChangeType.AdminWithdraw, BalanceChangeType.AdminGrant].includes(_id)) {
+        return total - amount;
+      }
+
+      return total;
+    }, 0);
+  }
+
   listTransactionHistory(filter: IBalanceChangesFilter) {
     return this._list(filter, {
       type: {
