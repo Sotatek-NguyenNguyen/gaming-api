@@ -13,7 +13,7 @@ export class GameServerSignatureMiddleware implements NestMiddleware {
       }
     } else {
       const signature = req.headers['x-signature'];
-
+      console.log('hello');
       if (!signature || signature !== this.gsHelperService.generateSignature(req.body)) {
         throw new ForbiddenException();
       }

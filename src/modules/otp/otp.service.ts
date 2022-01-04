@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { ClientSession, FilterQuery, Model } from 'mongoose';
 import { generateRandomNumber } from 'src/common/utils';
 import nacl from 'tweetnacl';
+import { Base58 } from '../auth/base58';
 import { UserService } from '../user/user.service';
 // import { ListUserQuery, ListUserResponse, UserResponse } from './dto';
 import { Otp, OtpDocument } from './otp.schema';
@@ -20,11 +21,11 @@ export class OtpService {
   getByOtp(otp: string) {
     return this.model.findOne({ otp }).lean({ virtuals: true });
   }
-  async validateOtp(dto: any) {
-    const otp = dto.otp;
-    const accountInGameId = dto.accountInGameId;
-    const user = await this.userService.getUserByAddress(otp.address);
-    const address = otp.address;
+  async validateOtp(address, dto: any) {
+    const { otp, accountInGameId } = dto;
+    // var  signedMessage
+    // const  expTime= nacl.sign.open( signedMessage ,Base58.decode(address))
+    const user = await this.userService.checkUserExistByAddress(address);
     const now = dayjs().format();
     const time = otp.exp;
     const token = await this.getByOtp(otp.address);
@@ -33,8 +34,9 @@ export class OtpService {
     if (time > now) {
       if (!token) {
         console.log('success 1');
-        const token2 = await this.model.create({ accountInGameId: accountInGameId, otp: address });
-        return { accountInGameId, address };
+        await this.model.create({ accountInGameId: accountInGameId, otp: address });
+        const userUpdate = await this.userService.updateAccountInGameIdByAddress(address, accountInGameId);
+        return userUpdate;
       } else {
         if ((token.accountInGameId = accountInGameId)) {
           console.log('success wwith same otp');

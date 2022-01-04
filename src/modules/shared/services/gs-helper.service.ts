@@ -17,7 +17,7 @@ export class GsHelperService {
     const { accessKey, secretKey } = this.configService.gsKey;
     const signData = `accessKey=${accessKey}&${stringify(data)}`;
     const hmac = createHmac('sha512', secretKey);
-
+    // console.log( hmac.update(Buffer.from(signData, 'utf-8')).digest('hex')  )
     return hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
   }
 
