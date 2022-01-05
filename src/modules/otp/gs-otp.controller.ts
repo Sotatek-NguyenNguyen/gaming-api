@@ -4,7 +4,8 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiHeaderGsGet } from 'src/decorators';
 import { GsAuthorize } from 'src/decorators/gs-authorize.decorator';
 import { UserResponse } from '../user/dto';
-import { Otp } from './otp.schema';
+import { User } from '../user/user.schema';
+import { OtpRequest } from './dto/otp.request.dto';
 import { OtpService } from './otp.service';
 
 @ApiTags('Game Server')
@@ -22,8 +23,8 @@ export class GsOtpController {
     type: UserResponse,
   })
   @ApiHeaderGsGet()
-  //   @UseInterceptors(MapInterceptor(UserResponse, User))
-  gsValidateAccountInGamewwithOtp(@Param('address') address: string, @Body() dto: any) {
+  @UseInterceptors(MapInterceptor(UserResponse, User))
+  gsValidateAccountInGamewwithOtp(@Param('address') address: string, @Body() dto: OtpRequest) {
     return this.otpService.validateOtp(address, dto);
   }
 }

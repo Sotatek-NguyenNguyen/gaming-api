@@ -15,7 +15,7 @@ export class Otp extends BaseMongo {
 
   @Prop({ required: true, unique: true })
   @AutoMap()
-  otp?: string;
+  otp: string;
 }
 
 export const OtpSchema = SchemaFactory.createForClass(Otp);
