@@ -126,8 +126,24 @@ export class UserService {
     );
   }
 
+  getUserByAccountInGameId(accountInGameId: string) {
+    return this.model.findOne({ accountInGameId });
+  }
+
   getUserByAddress(address: string) {
     return this.model.findOne({ address }).lean({ virtuals: true });
+  }
+
+  updateAccountInGameIdByAddress(address: string, accountInGameId: string) {
+    return this.model
+      .findOneAndUpdate(
+        { address },
+        { accountInGameId },
+        {
+          new: true,
+        },
+      )
+      .lean({ virtuals: true });
   }
 
   generateNewNonce(userId: string) {
@@ -313,22 +329,24 @@ export class UserService {
   }
 
   async adminGetGameBalance(): Promise<GameBalanceResponse> {
-    const [{ balance }, [{ inGameBalance }]] = await Promise.all([
+    const [{ balance }, [{ allocatedInGameBalance }], unallocatedInGameBalance] = await Promise.all([
       this.treasuryGetterService.getTreasuryBalance(),
       this.model.aggregate([
         { $match: { role: UserRole.Player } },
         {
           $group: {
             _id: null,
-            inGameBalance: { $sum: '$balance' },
+            allocatedInGameBalance: { $sum: '$balance' },
           },
         },
       ]),
+      this.balanceChangeService.getUnallocatedGameBalance(),
     ]);
 
     return {
       actualGameBalance: balance,
-      inGameBalance,
+      unallocatedInGameBalance,
+      allocatedInGameBalance,
     };
   }
 
@@ -442,15 +460,15 @@ export class UserService {
   }
 
   async overviewStatistic() {
-    const [newUserLast24Hours, newUserOneDayAgo, newUserSevenDaysAgo] = await Promise.all([
+    const [newUserLast24Hours, newUserSevenDaysAgo, newUserLast30Days] = await Promise.all([
       this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.Last24Hours)),
-      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.OneDayAgo)),
       this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.SevenDaysAgo)),
+      this.model.aggregate(this._genAggregatePipeToStatisticUser(TimeToHours.Last30Days)),
     ]);
     return {
       newUserLast24Hours: tranformNullToStatisticData(newUserLast24Hours[0]),
-      newUserOneDayAgo: tranformNullToStatisticData(newUserOneDayAgo[0]),
       newUserSevenDaysAgo: tranformNullToStatisticData(newUserSevenDaysAgo[0]),
+      newUserLast30Days: tranformNullToStatisticData(newUserLast30Days[0]),
     };
   }
 }

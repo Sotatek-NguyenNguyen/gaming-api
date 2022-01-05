@@ -4,6 +4,7 @@ import { Document } from 'mongoose';
 import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
 import { BaseMongo } from 'src/common/dto';
 import { BaseSchema } from 'src/decorators';
+import { NftItemStatus } from './enum';
 
 export type NftItemDocument = NftItem & Document;
 
@@ -17,9 +18,21 @@ export class NftItem extends BaseMongo {
   @AutoMap()
   gameItemId: string;
 
-  @Prop({ unique: true })
+  @Prop({ index: true })
   @AutoMap()
   address?: string;
+
+  @Prop()
+  metadata?: string;
+
+  @Prop()
+  metadataLink?: string;
+
+  @Prop()
+  localImagePath?: string;
+
+  @Prop({ enum: NftItemStatus, default: NftItemStatus.MetadataUploading })
+  status: NftItemStatus;
 }
 
 export const NftItemSchema = SchemaFactory.createForClass(NftItem);

@@ -25,6 +25,7 @@ export const GameServerUrlRedisKey = {
 
 export const QueueName = {
   DepositEventHandler: 'deposit-event-handler',
+  NftRegisterEventHandler: 'nft-register-event-handler',
   GameServerNotify: 'gs-notify',
   CancelWithdrawTransaction: 'cancel-withdraw-transaction',
 };
@@ -33,6 +34,6 @@ export const NUMBER_CORE_CPUS = cpus().length;
 
 export const TimeToHours = {
   Last24Hours: 24,
-  OneDayAgo: 48,
   SevenDaysAgo: 7 * 24,
+  Last30Days: 30 * 24,
 };
