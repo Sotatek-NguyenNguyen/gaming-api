@@ -109,11 +109,19 @@ export class ApiConfigService {
   get blockchain() {
     return {
       rpcEndpoint: this.getString('BC_RPC_ENDPOINT'),
+      env: this.getString('BC_ENV'),
       programId: this.getString('TREASURY_PROGRAM_ID'),
       treasuryAccount: this.getString('TREASURY_ACCOUNT'),
       gameId: this.getString('TREASURY_GAME_ID'),
       gameOwnerPK: this.getString('TREASURY_GAME_OWNER_PRIVATE_KEY'),
       pdaSeed: this.getString('TREASURY_PDA_SEED'),
+    };
+  }
+
+  get arweave() {
+    return {
+      paymentWallet: this.getString('ARWEAVE_PAYMENT_WALLET'),
+      uploadEndpoint: this.getString('ARWEAVE_UPLOAD_ENDPOINT'),
     };
   }
 

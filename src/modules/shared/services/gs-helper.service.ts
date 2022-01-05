@@ -5,6 +5,7 @@ import { Redis } from 'ioredis';
 import { stringify } from 'querystring';
 import { GameServerUrlRedisKey } from 'src/common/constant';
 import { http } from 'src/common/http';
+import { GsdValidateGameItemRequest, GsdValidateGameItemResponse } from 'src/modules/game-server-dummy/dto';
 import { GsNotifyConsumerPayload } from 'src/modules/treasury-event-consumer/interfaces';
 import { ApiConfigService } from './api-config.service';
 
@@ -63,15 +64,22 @@ export class GsHelperService {
     );
   }
 
-  async getItem(itemId: string) {
+  async validateGameItem(userAddress: string, itemId: string) {
     const getItemUrl = await this.redis.get(GameServerUrlRedisKey.GetItemUrl);
 
     if (!getItemUrl) {
       throw new BadRequestException('MINT_NFT_IS_NOT_AVAILABLE');
     }
 
-    return http.get(`${getItemUrl}?itemId=${itemId}`, {
-      headers: { 'x-access-key': this.configService.gsKey.accessKey },
-    });
+    return http.post<any, GsdValidateGameItemResponse, GsdValidateGameItemRequest>(
+      getItemUrl,
+      {
+        itemId,
+        userAddress,
+      },
+      {
+        headers: { 'x-access-key': this.configService.gsKey.accessKey },
+      },
+    );
   }
 }

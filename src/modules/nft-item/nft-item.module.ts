@@ -6,10 +6,11 @@ import { GsNftItemController } from './gs-nft-item.controller';
 import { MyNftItemController } from './my-nft-item.controller';
 import { NftItem, NftItemSchema } from './nft-item.schema';
 import { NftItemService } from './nft-item.service';
+import { NftRegisterService } from './nft-register.service';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: NftItem.name, schema: NftItemSchema }])],
-  providers: [NftItemService, NftMapper],
+  providers: [NftItemService, NftMapper, NftRegisterService],
   controllers: [MyNftItemController, AdminNftItemController, GsNftItemController],
   exports: [NftItemService],
 })

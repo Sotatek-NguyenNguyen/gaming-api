@@ -28,13 +28,16 @@ export class TreasuryGetterService implements OnModuleInit {
 
   readonly pdaSeed: Buffer;
 
+  readonly connection: Connection;
+
   constructor(readonly configService: ApiConfigService) {
     this.programId = configService.blockchain.programId;
 
     const wallet = new Wallet(Keypair.generate());
-    const connection = new Connection(configService.blockchain.rpcEndpoint, 'finalized');
 
-    this.provider = new Provider(connection, wallet, {});
+    this.connection = new Connection(configService.blockchain.rpcEndpoint, 'finalized');
+
+    this.provider = new Provider(this.connection, wallet, {});
     this.program = new Program(IDL, this.programId, this.provider);
 
     this.token = new Token(
