@@ -125,12 +125,15 @@ export class UserService {
       { session },
     );
   }
+
   getUserByAccountInGameId(accountInGameId: string) {
     return this.model.findOne({ accountInGameId });
   }
+
   getUserByAddress(address: string) {
     return this.model.findOne({ address }).lean({ virtuals: true });
   }
+
   updateAccountInGameIdByAddress(address: string, accountInGameId: string) {
     return this.model
       .findOneAndUpdate(

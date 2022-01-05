@@ -9,12 +9,12 @@ import { OtpRequest } from './dto/otp.request.dto';
 import { OtpService } from './otp.service';
 
 @ApiTags('Game Server')
-@Controller('game-server/otp')
+@Controller('game-server')
 @GsAuthorize()
 export class GsOtpController {
   constructor(readonly otpService: OtpService) {}
 
-  @Post(':address')
+  @Post('otp')
   @ApiOperation({
     operationId: 'Validate OTP from game server',
     description: 'validate OTP send by player from game server and maping account ingame with wallet address',
@@ -24,7 +24,7 @@ export class GsOtpController {
   })
   @ApiHeaderGsGet()
   @UseInterceptors(MapInterceptor(UserResponse, User))
-  gsValidateAccountInGamewwithOtp(@Param('address') address: string, @Body() dto: OtpRequest) {
-    return this.otpService.validateOtp(address, dto);
+  gsValidateAccountInGamewwithOtp(@Body() dto: OtpRequest) {
+    return this.otpService.validateOtp(dto);
   }
 }

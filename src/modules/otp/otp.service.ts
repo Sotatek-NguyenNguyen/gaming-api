@@ -27,10 +27,13 @@ export class OtpService {
   getByOtp(otp: string) {
     return this.model.findOne({ otp }).lean({ virtuals: true });
   }
-  async validateOtp(address, dto: OtpRequest) {
+
+  async validateOtp(dto: OtpRequest) {
     const { otp, accountInGameId } = dto;
     const data = JSON.parse(bs58.decode(otp).toString());
     const signature = data?.signature;
+    const address = data?.address;
+
     const message = {
       address: data.address,
       exp: data.exp,
@@ -41,24 +44,29 @@ export class OtpService {
       Buffer.from(signature, 'hex'),
       Base58.decode(address),
     );
+
     if (!validate) throw new BadRequestException('SIGNATURE_IS_NOT_VALID');
 
     const now = new Date().getTime();
     const user = await this.userService.checkUserExistByAddress(address);
-    if (data.exp < now) throw new RequestTimeoutException();
+
+    if (data.exp < now) throw new BadRequestException('EXPIRE_TIME_OUT');
+
     if (data.exp > now) {
       const token = await this.getByOtp(otp);
       if (!token) {
         const isAccountInGameIdWasUsed = await this.userService.getUserByAccountInGameId(accountInGameId);
+
         if (isAccountInGameIdWasUsed && isAccountInGameIdWasUsed.address !== address)
-          throw new ForbiddenException(' AccountInGame is used with another address');
+          throw new ForbiddenException('THIS_ACCOUNT_IN_GAME_IS_USED_WITH_ANOTHER_ADDRESS');
+
         await this.model.create({ accountInGameId: accountInGameId, otp: otp });
+
         return this.userService.updateAccountInGameIdByAddress(address, accountInGameId);
       } else {
         if (token.accountInGameId === accountInGameId) {
-          console.log('success validate with same otp and accountInGameId');
           return user;
-        } else throw new ForbiddenException(' this otp was used with another one');
+        } else throw new ForbiddenException('THIS_OTP_WAS_USED_WITH_ANOTHER_ACOUNT');
       }
     }
   }
