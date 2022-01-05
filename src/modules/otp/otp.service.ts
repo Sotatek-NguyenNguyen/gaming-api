@@ -23,6 +23,7 @@ export class OtpService {
     private readonly userService: UserService,
     @InjectMapper() readonly mapper: Mapper,
   ) {}
+
   getByOtp(otp: string) {
     return this.model.findOne({ otp }).lean({ virtuals: true });
   }
