@@ -35,8 +35,8 @@ export class MyNftItemController {
 
   @Post('/mint/arweave-upload')
   @ApiOperation({
-    operationId: 'mintNftItem',
-    description: 'Fist step to mint nft: Request tx arweave upload for an in-game item',
+    operationId: 'createTxForArweavePayment',
+    description: 'First step to mint nft: Request tx arweave upload for an in-game item',
   })
   @ApiOkResponse({
     type: ArweaveUploadPaymentResponse,

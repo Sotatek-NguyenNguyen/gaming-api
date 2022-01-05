@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class Attribute {
   @ApiProperty()
@@ -43,4 +43,21 @@ export class ArweaveMetadata {
   attributes?: Attribute[];
 
   collection?: Record<string, any>;
+}
+
+export class ArweaveMetadataResponse {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  gameItemId: string;
+
+  @ApiProperty()
+  image: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty({ type: [Attribute] })
+  attributes?: Attribute[];
 }

@@ -59,12 +59,8 @@ export class NftRegisterService {
   ): Promise<ArweaveUploadPaymentResponse> {
     let nftItem = await this.model.findOne({ gameItemId }).lean({ virtuals: true });
 
-    if (nftItem?.address) {
+    if (nftItem) {
       throw new BadRequestException('GAME_ITEM_IS_MINTED');
-    }
-
-    if (nftItem && nftItem.userAddress !== userAddress) {
-      throw new NotFoundException('GAME_ITEM_BELONGS_TO_OTHER_ADDRESS');
     }
 
     const gameItem = await this.gsHelperService.validateGameItem(userAddress, gameItemId);
@@ -82,14 +78,12 @@ export class NftRegisterService {
       throw new BadRequestException();
     }
 
-    if (!nftItem) {
-      nftItem = (
-        await this.model.create({
-          userAddress,
-          gameItemId,
-        })
-      ).toObject();
-    }
+    nftItem = (
+      await this.model.create({
+        userAddress,
+        gameItemId,
+      })
+    ).toObject();
 
     const { gameOwnerKeyPair: owner, provider } = this.treasuryGetterService;
 
@@ -145,7 +139,13 @@ export class NftRegisterService {
     return {
       serializedTx: transaction.serialize({ verifySignatures: false }).toString('base64'),
       nftItemId: nftItem.id,
-      metadata,
+      metadata: {
+        name: metadata.name,
+        image: gameItem.itemImage,
+        gameItemId,
+        attributes: [],
+        description: '',
+      },
     };
   }
 
@@ -157,12 +157,8 @@ export class NftRegisterService {
       })
       .lean({ virtuals: true });
 
-    if (!nftItem) {
+    if (!nftItem || nftItem.userAddress !== userAddress || nftItem.status !== NftItemStatus.MetadataUploading) {
       throw new NotFoundException('NFT_ITEM_NOT_FOUND');
-    }
-
-    if (nftItem.address) {
-      throw new BadRequestException('NFT_ITEM_MINTED');
     }
 
     if (!nftItem.metadata) {

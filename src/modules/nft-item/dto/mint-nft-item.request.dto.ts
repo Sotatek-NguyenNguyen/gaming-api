@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'src/decorators/validators';
-import { ArweaveMetadata } from './arweave-metadata.dto';
+import { ArweaveMetadataResponse } from './arweave-metadata.dto';
 
 export class ArweaveUploadPaymentRequest {
   @ApiProperty()
@@ -15,8 +15,8 @@ export class ArweaveUploadPaymentResponse {
   @ApiProperty()
   nftItemId: string;
 
-  @ApiProperty({ type: ArweaveMetadata })
-  metadata: ArweaveMetadata;
+  @ApiProperty({ type: ArweaveMetadataResponse })
+  metadata: ArweaveMetadataResponse;
 }
 
 export class MintNftItemRequest {
