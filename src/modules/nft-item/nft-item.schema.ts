@@ -31,7 +31,7 @@ export class NftItem extends BaseMongo {
   @Prop()
   localImagePath?: string;
 
-  @Prop({ enum: NftItemStatus, default: NftItemStatus.MetadataUploading })
+  @Prop({ enum: NftItemStatus, default: NftItemStatus.MetadataUploading, index: true })
   status: NftItemStatus;
 }
 

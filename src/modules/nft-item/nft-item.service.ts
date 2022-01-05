@@ -11,6 +11,7 @@ import { INftFilter } from './interfaces';
 import { NftItem, NftItemDocument } from './nft-item.schema';
 import { sleep } from 'src/common/utils';
 import { ApiConfigService } from '../shared/services';
+import { NftItemStatus } from './enum';
 
 @Injectable()
 export class NftItemService {
@@ -71,7 +72,9 @@ export class NftItemService {
       while (true) {
         console.log(`Processing page=${page} pageSize=${pageSize}`);
         const nfts = await this.model
-          .find()
+          .find({
+            status: NftItemStatus.Minted,
+          })
           .skip((page - 1) * pageSize)
           .limit(pageSize)
           .lean({ virtuals: true });
@@ -161,7 +164,7 @@ export class NftItemService {
       await this.model.bulkWrite(
         accounts.map((account) => ({
           updateOne: {
-            filter: { address: account.mint },
+            filter: { address: account.mint, userAddress: { $ne: account.owner } },
             update: { $set: { userAddress: account.owner } },
           },
         })),
