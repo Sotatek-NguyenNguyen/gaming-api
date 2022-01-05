@@ -31,6 +31,7 @@ import { CreateMasterEditionArgs, CreateMetadataArgs, METADATA_SCHEMA } from './
 import { NftItem, NftItemDocument } from './nft-item.schema';
 import { serialize } from 'borsh';
 import { NftItemStatus } from './enum';
+import { ITreasuryDepositEventConsumerPayload } from '../treasury-event-consumer/interfaces';
 
 @Injectable()
 export class NftRegisterService {
@@ -40,6 +41,14 @@ export class NftRegisterService {
     readonly treasuryGetterService: TreasuryGetterService,
     readonly configService: ApiConfigService,
   ) {}
+
+  handleNftRegisterEvent(dto: ITreasuryDepositEventConsumerPayload) {
+    return this.model.findOneAndUpdate(
+      { address: dto.nftId, userAddress: dto.userAddress },
+      { status: NftItemStatus.Minted },
+      { new: true },
+    );
+  }
 
   /*
    * step 1 to registerNft

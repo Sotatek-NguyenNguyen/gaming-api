@@ -17,7 +17,7 @@ import {
   TreasuryEvent,
   TreasuryEventDocument,
 } from './schema';
-import { IDecodedDepositEventFromTreasury } from './treasury-event.interface';
+import { IDecodedEventFromTreasury } from './treasury-event.interface';
 import { IDL } from './treasury.idl';
 
 interface IEvent {
@@ -44,6 +44,8 @@ export class TreasuryEventService {
     @InjectModel(TreasuryEvent.name)
     private treasuryEventModel: Model<TreasuryEventDocument>,
     @InjectQueue(QueueName.DepositEventHandler) private depositQueue: Queue<ITreasuryDepositEventConsumerPayload>,
+    @InjectQueue(QueueName.NftRegisterEventHandler)
+    private nftRegisterQueue: Queue<ITreasuryDepositEventConsumerPayload>,
     configService: ApiConfigService,
   ) {
     this.clusterHost = configService.blockchain.rpcEndpoint;
@@ -114,9 +116,15 @@ export class TreasuryEventService {
     }
 
     await Promise.all(
-      events
-        .filter((evt) => [TreasuryEventName.DepositEvent, TreasuryEventName.WithdrawEvent].includes(evt?.data?.evtName))
-        .map((evt) => this.depositQueue.add(evt.data, <JobOptions>{ attempts: 3, backoff: 5000 })),
+      events.map((evt) => {
+        if ([TreasuryEventName.DepositEvent, TreasuryEventName.WithdrawEvent].includes(evt?.data?.evtName)) {
+          return this.depositQueue.add(evt.data, <JobOptions>{ attempts: 3, backoff: 5000 });
+        }
+
+        if (evt?.data?.evtName === TreasuryEventName.NftRegisterEvent) {
+          return this.nftRegisterQueue.add(evt.data, <JobOptions>{ attempts: 3, backoff: 5000 });
+        }
+      }),
     );
 
     await this.treasuryEventModel.bulkWrite(
@@ -175,7 +183,7 @@ export class TreasuryEventService {
 
       for (let i = 0; i < serializedLogMessages.length; i++) {
         const log = serializedLogMessages[i];
-        const decodedLog = this.coder.events.decode(log) as IDecodedDepositEventFromTreasury;
+        const decodedLog = this.coder.events.decode(log) as IDecodedEventFromTreasury;
 
         if (!decodedLog) {
           continue;
@@ -188,6 +196,7 @@ export class TreasuryEventService {
           raw: JSON.stringify(decodedLog),
           data: {
             transactionId: transaction.signature,
+            nftId: decodedLog.name === TreasuryEventName.NftRegisterEvent ? decodedLog?.data?.nftId?.toBase58() : null,
             evtName: decodedLog.name,
             userAddress: decodedLog.data.user.toBase58(),
             amount: decodedLog.data?.amount?.toString(),

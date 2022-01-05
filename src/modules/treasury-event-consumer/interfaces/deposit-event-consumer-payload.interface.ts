@@ -9,6 +9,8 @@ export interface ITreasuryDepositEventConsumerPayload {
 
   transactionId: string;
 
+  nftId?: string;
+
   senderAddress?: string;
 
   withdrawalId?: string;
