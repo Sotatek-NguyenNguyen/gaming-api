@@ -1,27 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { IJwtPayload } from 'src/common/interfaces';
-import { ApiConfigService } from '../shared/services';
-import { UserService } from '../user/user.service';
-import { GenerateAuthTokenTestingRequest, GetSignatureMsgToLoginRequest, LoginRequest, LoginResponse } from './dto';
 import nacl from 'tweetnacl';
+import { UserService } from '../user/user.service';
 import { Base58 } from './base58';
-import { generateRandomNumber } from 'src/common/utils';
+import { GenerateAuthTokenTestingRequest, GetSignatureMsgToLoginRequest, LoginRequest, LoginResponse } from './dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly userService: UserService,
-    private readonly configService: ApiConfigService,
-    readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly userService: UserService, readonly jwtService: JwtService) {}
 
   async getSignatureMessageToLogin({ address }: GetSignatureMsgToLoginRequest) {
     let user = await this.userService.getUserByAddress(address);
 
     if (!user) {
-      // const { accountInGameId, balance } = await this.checkUserAddressHasGameAccount();
-
       user = await this.userService.create({
         address,
       });
@@ -68,18 +60,6 @@ export class AuthService {
 
   generateAuthToken(dto: GenerateAuthTokenTestingRequest) {
     return this.jwtService.sign(<IJwtPayload>{ sub: dto.userId, address: dto.address, role: dto.role });
-  }
-
-  async checkUserAddressHasGameAccount() {
-    // TODO: call to game server to validate user address and get accountInGameId
-    // expectedResponse
-    // {address, accountId, balance}
-
-    // if (!accountInGameId) {
-    //   throw new NotFoundException('GAME_ACCOUNT_ASSOCIATED_NOT_FOUND');
-    // }
-
-    return Promise.resolve({ accountInGameId: String(generateRandomNumber()), balance: 0 });
   }
 
   generateSignatureMsgFromNonce(nonce: number) {

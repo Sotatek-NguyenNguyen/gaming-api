@@ -8,4 +8,10 @@ export interface ITreasuryDepositEventConsumerPayload {
   evtName: TreasuryEventName;
 
   transactionId: string;
+
+  nftId?: string;
+
+  senderAddress?: string;
+
+  withdrawalId?: string;
 }

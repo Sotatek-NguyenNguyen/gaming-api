@@ -8,3 +8,9 @@ export enum BalanceChangeType {
   InGameIncrease = 'in_game_increase',
   InGameDecrease = 'in_game_decrease',
 }
+
+export enum BalanceChangeStatus {
+  Succeed = 'succeed',
+  Failed = 'failed',
+  Pending = 'pending',
+}

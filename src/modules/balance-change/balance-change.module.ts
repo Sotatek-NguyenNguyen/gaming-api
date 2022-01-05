@@ -1,5 +1,7 @@
+import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { QueueName } from 'src/common/constant';
 import { GsRequestHistoryModule } from '../gs-request-history/gs-request-history.module';
 import { UserModule } from '../user/user.module';
 import { AdminBalanceChangeController } from './admin-balance-change.controller';
@@ -14,6 +16,9 @@ import { MyBalanceChangeController } from './my-balance-change.controller';
     MongooseModule.forFeature([{ name: BalanceChange.name, schema: BalanceChangeSchema }]),
     forwardRef(() => GsRequestHistoryModule),
     forwardRef(() => UserModule),
+    BullModule.registerQueue({
+      name: QueueName.CancelWithdrawTransaction,
+    }),
   ],
   providers: [BalanceChangeService, BalanceChangeMapper],
   controllers: [MyBalanceChangeController, AdminBalanceChangeController, GsBalanceChangeController],

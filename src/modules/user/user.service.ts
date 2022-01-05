@@ -10,17 +10,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { BN, web3 } from '@project-serum/anchor';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { Queue } from 'bull';
-import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
+import { ClientSession, FilterQuery, Model, PipelineStage, UpdateQuery } from 'mongoose';
 import { QueueName, TimeToHours, TreasuryEventName, UserRole } from 'src/common/constant';
 import { SuccessResponseDto } from 'src/common/dto';
-import { dayjs } from 'src/common/pkg/dayjs';
 import { generateRandomNumber, tranformNullToStatisticData } from 'src/common/utils';
-import { BalanceChangeType } from '../balance-change/balance-change.enum';
+import { BalanceChangeStatus, BalanceChangeType } from '../balance-change/balance-change.enum';
 import { BalanceChangeService } from '../balance-change/balance-change.service';
 import { ApiConfigService, TreasuryGetterService } from '../shared/services';
 import { GsAdminGrantDeductNotifyData, GsNotifyConsumerPayload } from '../treasury-event-consumer/interfaces';
@@ -49,20 +47,6 @@ export class UserService {
     @InjectQueue(QueueName.GameServerNotify)
     readonly gsNotifyQueue: Queue<GsNotifyConsumerPayload<GsAdminGrantDeductNotifyData>>,
   ) {}
-
-  @Cron(CronExpression.EVERY_30_MINUTES)
-  handleCron() {
-    if (this.configService.isMasterProcess) {
-      return this.model.updateMany(
-        { isRequestingWithdraw: true, lastRequestWithdrawAt: dayjs().subtract(1, 'hour').toDate() },
-        {
-          $set: {
-            isRequestingWithdraw: false,
-          },
-        },
-      );
-    }
-  }
 
   async list(filter: ListUserQuery): Promise<ListUserResponse> {
     const { page, pageSize } = filter;
@@ -124,21 +108,12 @@ export class UserService {
     });
   }
 
-  bulkUpdateUserBalanceByAddress(
-    dto: { address: string; amount: number; balanceChangeType?: BalanceChangeType }[],
-    session?: ClientSession,
-  ) {
+  bulkUpdateUserBalanceByAddress(dto: { address: string; amount: number }[], session?: ClientSession) {
     return this.model.bulkWrite(
-      dto.map(({ address, amount, balanceChangeType }) => {
+      dto.map(({ address, amount }) => {
         const updateObj: UpdateQuery<UserDocument> = {
           $inc: { balance: amount },
         };
-
-        if (balanceChangeType === BalanceChangeType.Withdrawn) {
-          updateObj.$set = {
-            isRequestingWithdraw: false,
-          };
-        }
 
         return {
           updateOne: {
@@ -188,13 +163,24 @@ export class UserService {
   }
 
   async userWithdraw(userAddress: string, { amount }: UserWithdrawRequest): Promise<UserWithdrawResponse> {
+    const { balance: treasuryBalance } = await this.treasuryGetterService.getTreasuryBalance();
+
+    if (new BN(treasuryBalance).lt(new BN(amount))) {
+      throw new BadRequestException('TREASURY_BALANCE_IS_NOT_ENOUGH');
+    }
+
     const user = await this.model.findOneAndUpdate(
-      { address: userAddress, balance: { $gte: amount }, isRequestingWithdraw: { $in: [null, false] } },
       {
-        $set: {
-          isRequestingWithdraw: true,
-          lastRequestWithdrawAt: new Date(),
+        address: userAddress,
+        balance: { $gte: amount },
+      },
+      {
+        $inc: {
+          balance: -amount,
         },
+      },
+      {
+        new: true,
       },
     );
 
@@ -202,13 +188,16 @@ export class UserService {
       throw new BadRequestException('USER_BALANCE_IS_NOT_ENOUGH_OR_USER_HAS_PENDING_WITHDRAW_REQUEST');
     }
 
-    const { balance: treasuryBalance } = await this.treasuryGetterService.getTreasuryBalance();
-
-    if (new BN(treasuryBalance).lt(new BN(amount))) {
-      throw new BadRequestException('TREASURY_BALANCE_IS_NOT_ENOUGH');
-    }
-
     try {
+      const bc = (
+        await this.balanceChangeService.create({
+          userAddress,
+          amount,
+          type: BalanceChangeType.Withdrawn,
+          status: BalanceChangeStatus.Pending,
+        })
+      ).toObject();
+
       const {
         provider,
         program,
@@ -228,7 +217,7 @@ export class UserService {
       );
 
       // Server create tx and sign
-      const tx = await program.transaction.withdraw(gameId, new BN(amount), {
+      const tx = await program.transaction.withdraw(gameId, bc.id, new BN(amount), {
         accounts: {
           owner: owner.publicKey,
           sender: withdrawAccount,
@@ -255,10 +244,12 @@ export class UserService {
       };
     } catch (error) {
       await this.model.updateOne(
-        { address: userAddress, isRequestingWithdraw: true },
         {
-          $set: {
-            isRequestingWithdraw: false,
+          address: userAddress,
+        },
+        {
+          $inc: {
+            balance: amount,
           },
         },
       );
@@ -276,6 +267,15 @@ export class UserService {
     if (new BN(treasuryBalance).lt(new BN(amount))) {
       throw new BadRequestException('TREASURY_BALANCE_IS_NOT_ENOUGH');
     }
+
+    const bc = (
+      await this.balanceChangeService.create({
+        userAddress,
+        amount,
+        type: BalanceChangeType.AdminWithdraw,
+        status: BalanceChangeStatus.Pending,
+      })
+    ).toObject();
 
     const {
       provider,
@@ -297,7 +297,7 @@ export class UserService {
     );
 
     // Server create tx and sign
-    const tx = await program.transaction.withdraw(gameId, new BN(amount), {
+    const tx = await program.transaction.withdraw(gameId, bc.id, new BN(amount), {
       accounts: {
         owner: owner.publicKey,
         sender: payerAddressAccount,
@@ -326,22 +326,24 @@ export class UserService {
   }
 
   async adminGetGameBalance(): Promise<GameBalanceResponse> {
-    const [{ balance }, [{ inGameBalance }]] = await Promise.all([
+    const [{ balance }, [{ allocatedInGameBalance }], unallocatedInGameBalance] = await Promise.all([
       this.treasuryGetterService.getTreasuryBalance(),
       this.model.aggregate([
         { $match: { role: UserRole.Player } },
         {
           $group: {
             _id: null,
-            inGameBalance: { $sum: '$balance' },
+            allocatedInGameBalance: { $sum: '$balance' },
           },
         },
       ]),
+      this.balanceChangeService.getUnallocatedGameBalance(),
     ]);
 
     return {
       actualGameBalance: balance,
-      inGameBalance,
+      unallocatedInGameBalance,
+      allocatedInGameBalance,
     };
   }
 
@@ -419,7 +421,7 @@ export class UserService {
     return query;
   }
   _genAggregatePipeToStatisticUser(amount: number) {
-    const pipe = [
+    const pipe: PipelineStage[] = [
       {
         $match: {
           $expr: {

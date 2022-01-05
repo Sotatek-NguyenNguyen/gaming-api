@@ -1,7 +1,7 @@
 import { AutoMap } from '@automapper/classes';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseResponseDto, PaginationResponseDto } from 'src/common/dto';
-import { BalanceChangeType } from '../balance-change.enum';
+import { BalanceChangeStatus, BalanceChangeType } from '../balance-change.enum';
 
 export class BalanceChangesResponse extends BaseResponseDto {
   @ApiProperty()
@@ -23,6 +23,10 @@ export class BalanceChangesResponse extends BaseResponseDto {
   @ApiPropertyOptional()
   @AutoMap()
   note?: string;
+
+  @ApiPropertyOptional({ enum: BalanceChangeStatus })
+  @AutoMap()
+  status?: BalanceChangeStatus;
 }
 
 export class ListBalanceChangesResponse extends PaginationResponseDto {
