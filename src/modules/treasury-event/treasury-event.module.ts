@@ -21,9 +21,12 @@ import { TreasurySignatureService } from './treasury-signature.service';
       { name: Signature.name, schema: SignatureSchema },
       { name: LatestSignature.name, schema: LatestSignatureSchema },
     ]),
-    BullModule.registerQueue({
-      name: QueueName.DepositEventHandler,
-    }),
+    BullModule.registerQueue(
+      {
+        name: QueueName.DepositEventHandler,
+      },
+      { name: QueueName.NftRegisterEventHandler },
+    ),
   ],
   providers: [TreasuryEventConsole, TreasuryEventService, TreasurySignatureService],
 })
