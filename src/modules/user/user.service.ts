@@ -126,8 +126,24 @@ export class UserService {
     );
   }
 
+  getUserByAccountInGameId(accountInGameId: string) {
+    return this.model.findOne({ accountInGameId });
+  }
+
   getUserByAddress(address: string) {
     return this.model.findOne({ address }).lean({ virtuals: true });
+  }
+
+  updateAccountInGameIdByAddress(address: string, accountInGameId: string) {
+    return this.model
+      .findOneAndUpdate(
+        { address },
+        { accountInGameId },
+        {
+          new: true,
+        },
+      )
+      .lean({ virtuals: true });
   }
 
   generateNewNonce(userId: string) {

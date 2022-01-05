@@ -3,11 +3,13 @@ import { Body, Controller, Get, Param, Post, UseInterceptors } from '@nestjs/com
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiHeaderGsGet } from 'src/decorators';
 import { GsAuthorize } from 'src/decorators/gs-authorize.decorator';
-import { Otp } from './otp.schema';
+import { UserResponse } from '../user/dto';
+import { User } from '../user/user.schema';
+import { OtpRequest } from './dto/otp.request.dto';
 import { OtpService } from './otp.service';
 
-@ApiTags('admin')
-@Controller('admin')
+@ApiTags('Game Server')
+@Controller('game-server')
 @GsAuthorize()
 export class GsOtpController {
   constructor(readonly otpService: OtpService) {}
@@ -17,10 +19,12 @@ export class GsOtpController {
     operationId: 'Validate OTP from game server',
     description: 'validate OTP send by player from game server and maping account ingame with wallet address',
   })
-  @ApiOkResponse({})
+  @ApiOkResponse({
+    type: UserResponse,
+  })
   @ApiHeaderGsGet()
-  //   @UseInterceptors(MapInterceptor(UserResponse, User))
-  gsValidateAccountInGamewwithOtp(@Body() dto: any) {
+  @UseInterceptors(MapInterceptor(UserResponse, User))
+  gsValidateAccountInGamewwithOtp(@Body() dto: OtpRequest) {
     return this.otpService.validateOtp(dto);
   }
 }
