@@ -2,7 +2,6 @@ import { calculate } from '@metaplex/arweave-cost';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { BN } from '@project-serum/anchor';
-import mimeTypes from 'mime-types';
 import { MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   Keypair,
@@ -12,14 +11,19 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
+import { serialize } from 'borsh';
+import FormData from 'form-data';
 import fs from 'fs';
 import fsPromises from 'fs/promises';
+import mimeTypes from 'mime-types';
 import { Model } from 'mongoose';
 import path from 'path';
 import { http } from 'src/common/http';
 import { Stream } from 'stream';
 import { ApiConfigService, GsHelperService, TreasuryGetterService } from '../shared/services';
+import { ITreasuryDepositEventConsumerPayload } from '../treasury-event-consumer/interfaces';
 import { ArweaveMetadata, ArweaveUploadPaymentRequest, ArweaveUploadPaymentResponse, MintNftItemRequest } from './dto';
+import { NftItemStatus } from './enum';
 import { getMasterEdition, getMetadata, getTokenWallet } from './helpers/accounts';
 import {
   createAssociatedTokenAccountInstruction,
@@ -29,10 +33,6 @@ import {
 import { createMetadata } from './helpers/mint-nft';
 import { CreateMasterEditionArgs, CreateMetadataArgs, METADATA_SCHEMA } from './helpers/schema';
 import { NftItem, NftItemDocument } from './nft-item.schema';
-import { serialize } from 'borsh';
-import { NftItemStatus } from './enum';
-import { ITreasuryDepositEventConsumerPayload } from '../treasury-event-consumer/interfaces';
-import FormData from 'form-data';
 
 @Injectable()
 export class NftRegisterService {
@@ -134,7 +134,7 @@ export class NftRegisterService {
       {
         _id: nftItem.id,
       },
-      { $set: { metadata: JSON.stringify(metadata), localImagePath, status: NftItemStatus.Minting } },
+      { $set: { metadata: JSON.stringify(metadata), localImagePath } },
     );
 
     return {
@@ -185,10 +185,10 @@ export class NftRegisterService {
   async _uploadToArweave(arweaveUploadTxId: string, nftItem: NftItem) {
     const imageExt = this._getImageExtension(nftItem.localImagePath);
 
-    const data = new FormData();
-    data.append('transaction', arweaveUploadTxId);
-    data.append('env', this.configService.blockchain.env);
-    data.append(
+    const formData = new FormData();
+    formData.append('transaction', arweaveUploadTxId);
+    formData.append('env', this.configService.blockchain.env);
+    formData.append(
       'file[]',
       fs.createReadStream(nftItem.localImagePath) as any,
       {
@@ -196,9 +196,18 @@ export class NftRegisterService {
         contentType: mimeTypes.lookup(imageExt),
       } as any,
     );
-    data.append('file[]', Buffer.from(nftItem.metadata) as unknown as any, 'metadata.json');
+    formData.append('file[]', Buffer.from(nftItem.metadata) as unknown as any, 'metadata.json');
 
-    const result: any = await http.post(this.configService.arweave.uploadEndpoint, data);
+    const result: { messages: any[]; error: string } = await http.post(
+      this.configService.arweave.uploadEndpoint,
+      formData,
+      {
+        headers: formData.getHeaders(),
+      },
+    );
+
+    if (result.error) console.error(result.error);
+
     const metadataFile = result.messages?.find((m) => m.filename === 'manifest.json');
     // const imageFile = result.messages?.find((m) => m.filename === `0.${imageExt}`);
 
