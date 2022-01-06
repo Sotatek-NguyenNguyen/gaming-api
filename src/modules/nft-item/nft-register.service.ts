@@ -109,6 +109,7 @@ export class NftRegisterService {
       },
       description: '',
       seller_fee_basis_points: 0,
+      attributes: [],
       collection: {},
     };
 
