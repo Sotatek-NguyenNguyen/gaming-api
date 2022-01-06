@@ -1,7 +1,7 @@
 import { MapInterceptor } from '@automapper/nestjs';
 import { Body, Controller, Get, Param, Post, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiHeaderGsGet } from 'src/decorators';
+import { ApiHeaderGsPost } from 'src/decorators';
 import { GsAuthorize } from 'src/decorators/gs-authorize.decorator';
 import { UserResponse } from '../user/dto';
 import { User } from '../user/user.schema';
@@ -22,7 +22,7 @@ export class GsOtpController {
   @ApiOkResponse({
     type: UserResponse,
   })
-  @ApiHeaderGsGet()
+  @ApiHeaderGsPost()
   @UseInterceptors(MapInterceptor(UserResponse, User))
   gsValidateAccountInGamewwithOtp(@Body() dto: OtpRequest) {
     return this.otpService.validateOtp(dto);
