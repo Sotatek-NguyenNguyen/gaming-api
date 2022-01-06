@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsMongoId, IsNotEmpty } from 'class-validator';
 import { IsString } from 'src/decorators/validators';
 import { ArweaveMetadataResponse } from './arweave-metadata.dto';
 
@@ -21,9 +22,12 @@ export class ArweaveUploadPaymentResponse {
 
 export class MintNftItemRequest {
   @ApiProperty()
+  @IsString()
   arweaveUploadTxId: string;
 
   @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
   nftItemId: string;
 }
 
