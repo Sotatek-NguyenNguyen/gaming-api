@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { BootstrapConsole } from 'nestjs-console';
 import { AppConsoleModule } from './app-console.module';
 

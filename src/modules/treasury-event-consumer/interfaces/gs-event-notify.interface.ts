@@ -25,10 +25,7 @@ export class GsMintNftNotifyData {
 @ApiExtraModels()
 export class GsNftTransferNotifyData {
   @ApiProperty()
-  fromUserAddress: string;
-
-  @ApiProperty()
-  toUserAddress: string;
+  ownerAddress: string;
 
   @ApiProperty()
   nftAddress: string;
