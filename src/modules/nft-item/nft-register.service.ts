@@ -32,6 +32,7 @@ import { NftItem, NftItemDocument } from './nft-item.schema';
 import { serialize } from 'borsh';
 import { NftItemStatus } from './enum';
 import { ITreasuryDepositEventConsumerPayload } from '../treasury-event-consumer/interfaces';
+import FormData from 'form-data';
 
 @Injectable()
 export class NftRegisterService {
