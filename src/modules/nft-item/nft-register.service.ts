@@ -143,6 +143,8 @@ export class NftRegisterService {
         gameItemId,
         attributes: [],
         description: '',
+        royaltiesPercentage: metadata.seller_fee_basis_points,
+        costToCreate: storageCost,
       },
     };
   }

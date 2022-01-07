@@ -60,4 +60,10 @@ export class ArweaveMetadataResponse {
 
   @ApiProperty({ type: [Attribute] })
   attributes?: Attribute[];
+
+  @ApiProperty()
+  royaltiesPercentage: number;
+
+  @ApiProperty()
+  costToCreate: number;
 }
