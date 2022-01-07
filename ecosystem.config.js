@@ -22,5 +22,12 @@ module.exports = {
         NODE_ENV: 'develop',
       },
     },
+    {
+      name: 'gaming-nft-scan-service',
+      script: 'node ./dist/console.js nft-item-scan',
+      env: {
+        NODE_ENV: 'develop',
+      },
+    },
   ],
 };
