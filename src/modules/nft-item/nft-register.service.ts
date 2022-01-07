@@ -131,7 +131,7 @@ export class NftRegisterService {
       {
         _id: nftItem.id,
       },
-      { $set: { metadata: JSON.stringify(metadata), localImagePath } },
+      { $set: { metadata: JSON.stringify(metadata), localImagePath, gameItemName: gameItem.itemName } },
     );
 
     return {

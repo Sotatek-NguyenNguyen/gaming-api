@@ -18,6 +18,10 @@ export class NftItem extends BaseMongo {
   @AutoMap()
   gameItemId: string;
 
+  @Prop({})
+  @AutoMap()
+  gameItemName: string;
+
   @Prop({ index: true })
   @AutoMap()
   address?: string;
@@ -32,6 +36,7 @@ export class NftItem extends BaseMongo {
   localImagePath?: string;
 
   @Prop({ enum: NftItemStatus, default: NftItemStatus.MetadataUploading, index: true })
+  @AutoMap()
   status: NftItemStatus;
 }
 
