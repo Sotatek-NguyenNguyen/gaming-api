@@ -44,11 +44,7 @@ export class NftRegisterService {
   ) {}
 
   handleNftRegisterEvent(dto: ITreasuryDepositEventConsumerPayload) {
-    return this.model.findOneAndUpdate(
-      { address: dto.nftId, userAddress: dto.userAddress },
-      { status: NftItemStatus.Minted },
-      { new: true },
-    );
+    return this.model.findOneAndUpdate({ address: dto.nftId }, { status: NftItemStatus.Minted }, { new: true });
   }
 
   /*
@@ -175,7 +171,7 @@ export class NftRegisterService {
       {
         _id: nftItemId,
       },
-      { $set: { metadataLink, address: nftItemAddress } },
+      { $set: { metadataLink, address: nftItemAddress, status: NftItemStatus.Minting } },
     );
 
     fsPromises.rm(nftItem.localImagePath);
