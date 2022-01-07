@@ -310,6 +310,7 @@ export class NftRegisterService {
 
     transaction.recentBlockhash = (await provider.connection.getRecentBlockhash()).blockhash;
     transaction.feePayer = userPublicKey;
+    transaction.partialSign(mint, owner);
 
     return {
       serializedTx: transaction.serialize({ verifySignatures: false }).toString('base64'),
