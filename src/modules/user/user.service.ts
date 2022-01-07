@@ -35,6 +35,7 @@ import {
   UserWithdrawResponse,
 } from './dto';
 import { User, UserDocument } from './user.schema';
+import excel from 'node-excel-export';
 
 @Injectable()
 export class UserService {
@@ -69,6 +70,109 @@ export class UserService {
       total,
       pageCount: Math.ceil(total / pageSize),
     };
+  }
+
+  async listUserToExcel(res) {
+    const styles = {
+      headerDark: {
+        font: {
+          color: {
+            rgb: 'FF000000',
+          },
+          sz: 14,
+          bold: true,
+          underline: true,
+        },
+      },
+      cellWhite: {
+        fill: {
+          fgColor: {
+            rgb: 'FFFFFF',
+          },
+        },
+      },
+      cellRed: {
+        fill: {
+          fgColor: {
+            rgb: 'FF0000',
+          },
+        },
+      },
+      cellGreen: {
+        fill: {
+          fgColor: {
+            rgb: 'FF00FF00',
+          },
+        },
+      },
+    };
+
+    const heading = [[{ value: 'List User', style: styles.headerDark }]];
+
+    const specification = {
+      id: {
+        displayName: '_id',
+        headerStyle: styles.headerDark,
+        cellStyle: styles.cellWhite,
+        width: 200,
+      },
+      createdAt: {
+        displayName: 'createdAt',
+        headerStyle: styles.headerDark,
+        cellStyle: styles.cellGreen,
+        width: 120,
+      },
+      updatedAt: {
+        displayName: 'updatedAt',
+        headerStyle: styles.headerDark,
+        cellStyle: styles.cellGreen,
+        width: 120,
+      },
+      address: {
+        displayName: 'address',
+        headerStyle: styles.headerDark,
+        cellStyle: styles.cellWhite,
+        width: 320,
+      },
+      accountInGameId: {
+        displayName: 'accountInGameId',
+        headerStyle: styles.headerDark,
+        cellStyle: styles.cellWhite,
+        width: 200,
+      },
+      balance: {
+        displayName: 'balance',
+        headerStyle: styles.headerDark,
+        cellStyle: styles.cellRed,
+        width: 100,
+      },
+    };
+
+    const merges = [{ start: { row: 1, column: 1 }, end: { row: 1, column: 6 } }];
+
+    const sheet = [];
+    const query: FilterQuery<UserDocument> = {};
+    const pageSize = 1000;
+    let page = 1;
+    let next_cursor;
+    while (true) {
+      const userData = await this.model.find(query).sort({ _id: -1 }).limit(pageSize).lean({ virtuals: true });
+      sheet.push({
+        name: `User Report Page ${page}`,
+        heading: heading,
+        merges: merges,
+        specification: specification,
+        data: userData,
+      });
+      if (!userData[pageSize - 1]) break;
+      next_cursor = userData[pageSize - 1]._id;
+      query._id = { $lt: next_cursor };
+      page++;
+    }
+    const report = excel.buildExport(sheet);
+
+    res.attachment('report.xlsx');
+    res.send(report);
   }
 
   async checkUserExistByAddress(address: string) {
@@ -445,8 +549,8 @@ export class UserService {
       {
         $group: {
           _id: null,
-          amount: { $sum: '$balance' },
-          change: { $sum: 1 },
+          amount: { $sum: 1 },
+          change: { $sum: '$balance' },
         },
       },
       {

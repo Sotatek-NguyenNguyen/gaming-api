@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import excel from 'node-excel-export';
+import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from 'src/common/constant';
 import { SuccessResponseDto } from 'src/common/dto';
@@ -11,6 +12,16 @@ import { UserService } from './user.service';
 @Authorize(UserRole.Admin)
 export class AdminUserController {
   constructor(readonly userService: UserService) {}
+
+  @Get('excel')
+  @ApiOperation({
+    operationId: 'adminGetUsersToExcel',
+    description: 'Admin get list user and export to Excel',
+  })
+  @ApiOkResponse({})
+  listUserToExcel(@Res() res) {
+    return this.userService.listUserToExcel(res);
+  }
 
   @Get()
   @ApiOperation({
