@@ -65,13 +65,6 @@ export class GsHelperService {
   }
 
   async validateGameItem(userAddress: string, itemId: string): Promise<GsdValidateGameItemResponse> {
-    return {
-      itemId,
-      itemImage: 'https://cdn.tgdd.vn/Products/Images/42/223602/Slider/iphone-13mini-1020x570.jpg',
-      itemName: 'Iphone 13',
-      metadata: {},
-    };
-
     const getItemUrl = await this.redis.get(GameServerUrlRedisKey.GetItemUrl);
 
     if (!getItemUrl) {
