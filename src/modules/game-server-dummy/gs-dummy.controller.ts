@@ -136,4 +136,12 @@ export class GameServerDummyController {
       throw error;
     }
   }
+
+  @Get('/events')
+  @ApiOperation({
+    operationId: 'gs.listEvents',
+  })
+  listEvents(@Query() query: PaginationQueryDto) {
+    return this.service.getListEvent(query);
+  }
 }

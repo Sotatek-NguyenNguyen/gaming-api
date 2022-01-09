@@ -79,7 +79,7 @@ export class GameServerDummyService {
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean({ virtuals: true }),
-      this.playerModel.count(),
+      this.gameItemModel.count(),
     ]);
 
     return {
@@ -93,5 +93,27 @@ export class GameServerDummyService {
 
   async createGameItem(dto: CreateGsGameItemRequest) {
     return (await this.gameItemModel.create(dto)).toObject();
+  }
+
+  async getListEvent(filter: PaginationQueryDto) {
+    const { page, pageSize } = filter;
+
+    const [data, total] = await Promise.all([
+      this.eventModel
+        .find()
+        .sort({ _id: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean({ virtuals: true }),
+      this.eventModel.count(),
+    ]);
+
+    return {
+      data,
+      page,
+      pageSize,
+      total,
+      pageCount: Math.ceil(total / pageSize),
+    };
   }
 }
