@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import axios from 'axios';
 
 export const http = axios.create({
@@ -11,6 +12,8 @@ http.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    if (process.env.NODE_ENT !== 'production') throw new HttpException(error?.response?.data, error.response.status);
+
     throw error;
   },
 );

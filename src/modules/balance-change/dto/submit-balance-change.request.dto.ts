@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsString } from 'src/decorators/validators';
 
-class SubmitBalanceChange {
+export class SubmitBalanceChange {
   @ApiProperty()
   @IsString()
   address: string;
