@@ -11,6 +11,10 @@ export class GsGameItemResponse extends BaseResponseDto {
 
   @ApiProperty({})
   @AutoMap()
+  symbol: string;
+
+  @ApiProperty({})
+  @AutoMap()
   userAddress: string;
 
   @ApiProperty({})
@@ -20,12 +24,16 @@ export class GsGameItemResponse extends BaseResponseDto {
 
 export class CreateGsGameItemRequest {
   @ApiProperty({})
-  @IsString()
+  @IsString({ minLength: 1, maxLength: 32 })
   name: string;
 
   @ApiProperty({})
   @IsString()
   userAddress: string;
+
+  @ApiProperty({})
+  @IsString({ minLength: 1, maxLength: 10 })
+  symbol: string;
 
   @ApiProperty({})
   @IsUrl()

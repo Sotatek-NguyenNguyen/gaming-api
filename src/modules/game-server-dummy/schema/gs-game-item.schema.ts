@@ -20,6 +20,10 @@ export class GsGameItem extends BaseMongo {
   @Prop({ required: true })
   @AutoMap()
   image: string;
+
+  @Prop({ required: true })
+  @AutoMap()
+  symbol: string;
 }
 
 export const GsGameItemSchema = SchemaFactory.createForClass(GsGameItem);

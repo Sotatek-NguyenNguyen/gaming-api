@@ -38,6 +38,7 @@ export class GameServerDummyService {
     return {
       itemId,
       itemImage: gameItem.image,
+      itemSymbol: gameItem.symbol,
       itemName: gameItem.name,
       metadata: {},
     };

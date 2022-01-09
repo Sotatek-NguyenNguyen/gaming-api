@@ -86,7 +86,7 @@ export class NftRegisterService {
 
     const metadata: ArweaveMetadata = {
       name: gameItem.itemName,
-      symbol: gameItem.itemId,
+      symbol: gameItem.itemSymbol,
       image: `0.${imageExt}`,
       properties: {
         files: [

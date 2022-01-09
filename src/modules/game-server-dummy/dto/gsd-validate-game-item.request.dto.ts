@@ -8,6 +8,9 @@ export class GsdValidateGameItemResponse {
   itemName: string;
 
   @ApiProperty()
+  itemSymbol: string;
+
+  @ApiProperty()
   itemImage: string;
 
   @ApiPropertyOptional({ type: Object })
