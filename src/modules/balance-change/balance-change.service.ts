@@ -154,7 +154,7 @@ export class BalanceChangeService {
               (bc) =>
                 <BalanceChange>{
                   userAddress: bc.address,
-                  amount: bc.amount,
+                  amount: bc.amount > 0 ? bc.amount : -bc.amount,
                   type: bc.amount > 0 ? BalanceChangeType.InGameIncrease : BalanceChangeType.InGameDecrease,
                 },
             ),
