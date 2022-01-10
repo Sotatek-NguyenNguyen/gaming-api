@@ -110,43 +110,52 @@ export class NftRegisterService {
     };
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadata));
+    try {
+      const fsStat = await fsPromises.stat(localImagePath);
+      const estimatedManifestSize = await this._estimateManifestSize([`0.${imageExt}`, 'metadata.json']);
+      const storageCost = await this._fetchAssetCostToStore([
+        fsStat.size,
+        metadataBuffer.length,
+        estimatedManifestSize,
+      ]);
 
-    const fsStat = await fsPromises.stat(localImagePath);
-    const estimatedManifestSize = await this._estimateManifestSize([`0.${imageExt}`, 'metadata.json']);
-    const storageCost = await this._fetchAssetCostToStore([fsStat.size, metadataBuffer.length, estimatedManifestSize]);
+      const transaction = new Transaction();
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(userAddress),
+          toPubkey: new PublicKey(this.configService.arweave.paymentWallet),
+          lamports: storageCost,
+        }),
+      );
 
-    const transaction = new Transaction();
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(userAddress),
-        toPubkey: new PublicKey(this.configService.arweave.paymentWallet),
-        lamports: storageCost,
-      }),
-    );
+      transaction.recentBlockhash = (await provider.connection.getRecentBlockhash()).blockhash;
+      transaction.feePayer = new PublicKey(userAddress);
 
-    transaction.recentBlockhash = (await provider.connection.getRecentBlockhash()).blockhash;
-    transaction.feePayer = new PublicKey(userAddress);
+      await this.model.findOneAndUpdate(
+        {
+          _id: nftItem.id,
+        },
+        { $set: { metadata: JSON.stringify(metadata), localImagePath, gameItemName: gameItem.itemName } },
+      );
 
-    await this.model.findOneAndUpdate(
-      {
-        _id: nftItem.id,
-      },
-      { $set: { metadata: JSON.stringify(metadata), localImagePath, gameItemName: gameItem.itemName } },
-    );
-
-    return {
-      serializedTx: transaction.serialize({ verifySignatures: false }).toString('base64'),
-      nftItemId: nftItem.id,
-      metadata: {
-        name: metadata.name,
-        image: gameItem.itemImage,
-        gameItemId,
-        attributes: [],
-        description: '',
-        royaltiesPercentage: metadata.seller_fee_basis_points,
-        costToCreate: storageCost,
-      },
-    };
+      return {
+        serializedTx: transaction.serialize({ verifySignatures: false }).toString('base64'),
+        nftItemId: nftItem.id,
+        metadata: {
+          name: metadata.name,
+          image: gameItem.itemImage,
+          gameItemId,
+          attributes: [],
+          description: '',
+          royaltiesPercentage: metadata.seller_fee_basis_points,
+          costToCreate: storageCost / LAMPORTS_PER_SOL,
+        },
+      };
+    } catch (error) {
+      console.error('===== createTxForArweavePayment =====', error);
+      await this.model.findByIdAndDelete(nftItem.id);
+      throw error;
+    }
   }
 
   async treasuryMintNft(userAddress: string, { arweaveUploadTxId, nftItemId }: MintNftItemRequest) {
