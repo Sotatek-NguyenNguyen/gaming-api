@@ -121,6 +121,8 @@ export class GameServerDummyController {
     operationId: 'gs.postBc',
   })
   async submitBc(@Body() dto: SubmitBalanceChange) {
+    dto.amount *= Math.pow(10, 6);
+
     const data = {
       requestId: uuidv4(),
       balanceChanges: [dto],
