@@ -151,6 +151,7 @@ export class NftRegisterService {
             metadata: JSON.stringify(metadata),
             localImagePath,
             gameItemName: gameItem.itemName,
+            gameItemImage: gameItem.itemImage,
             status: NftItemStatus.MetadataUploading,
           },
         },
