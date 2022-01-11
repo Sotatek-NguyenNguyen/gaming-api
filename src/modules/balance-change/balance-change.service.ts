@@ -80,6 +80,7 @@ export class BalanceChangeService {
               BalanceChangeType.AdminGrant,
             ],
           },
+          status: BalanceChangeStatus.Succeed,
         },
       },
       {
