@@ -7,7 +7,7 @@ export class SubmitBalanceChange {
   address: string;
 
   @ApiProperty()
-  @IsNumber({})
+  @IsNumber({ integer: true })
   amount: number;
 }
 

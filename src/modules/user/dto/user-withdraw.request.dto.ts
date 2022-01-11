@@ -3,6 +3,6 @@ import { IsNumber } from 'src/decorators/validators';
 
 export class UserWithdrawRequest {
   @ApiProperty({ example: 1 })
-  @IsNumber({ positive: true })
+  @IsNumber({ positive: true, integer: true })
   amount: number;
 }

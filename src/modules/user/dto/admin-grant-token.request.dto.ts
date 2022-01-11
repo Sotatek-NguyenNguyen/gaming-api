@@ -3,7 +3,7 @@ import { IsNumber, IsString } from 'src/decorators/validators';
 
 export class AdminGrantTokenRequest {
   @ApiProperty({ example: 1 })
-  @IsNumber({ positive: true })
+  @IsNumber({ positive: true, integer: true })
   amount: number;
 
   @ApiProperty()
