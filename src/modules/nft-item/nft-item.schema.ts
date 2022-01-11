@@ -22,6 +22,10 @@ export class NftItem extends BaseMongo {
   @AutoMap()
   gameItemName: string;
 
+  @Prop({})
+  @AutoMap()
+  gameItemImage: string;
+
   @Prop({ index: true })
   @AutoMap()
   address?: string;
@@ -38,6 +42,9 @@ export class NftItem extends BaseMongo {
   @Prop({ enum: NftItemStatus, default: NftItemStatus.MetadataUploading, index: true })
   @AutoMap()
   status: NftItemStatus;
+
+  @Prop()
+  arweaveUploadTxId?: string;
 }
 
 export const NftItemSchema = SchemaFactory.createForClass(NftItem);

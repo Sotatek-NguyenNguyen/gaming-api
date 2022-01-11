@@ -44,7 +44,11 @@ export class NftRegisterService {
   ) {}
 
   handleNftRegisterEvent(dto: ITreasuryDepositEventConsumerPayload) {
-    return this.model.findOneAndUpdate({ address: dto.nftId }, { status: NftItemStatus.Minted }, { new: true });
+    return this.model.findOneAndUpdate(
+      { address: dto.nftId, userAddress: dto.userAddress, status: { $ne: NftItemStatus.Minted } },
+      { status: NftItemStatus.Minted },
+      { new: true },
+    );
   }
 
   /*
@@ -55,14 +59,20 @@ export class NftRegisterService {
     { gameItemId }: ArweaveUploadPaymentRequest,
   ): Promise<ArweaveUploadPaymentResponse> {
     let nftItem = await this.model.findOne({ gameItemId }).lean({ virtuals: true });
+    let needCreateNftItem = !nftItem;
 
-    if (nftItem) {
+    if (nftItem?.status === NftItemStatus.Minted) {
       throw new BadRequestException('GAME_ITEM_IS_MINTED');
     }
 
     const gameItem = await this.gsHelperService.validateGameItem(userAddress, gameItemId);
 
     if (!gameItem) throw new NotFoundException('GAME_ITEM_NOT_FOUND');
+
+    if (nftItem && nftItem.userAddress !== userAddress) {
+      await this.model.deleteOne({ gameItemId });
+      needCreateNftItem = true;
+    }
 
     const { localImagePath, imageExt } = await this._downloadImageToTmpFolder(
       gameItem.itemImage,
@@ -75,12 +85,13 @@ export class NftRegisterService {
       throw new BadRequestException();
     }
 
-    nftItem = (
-      await this.model.create({
-        userAddress,
-        gameItemId,
-      })
-    ).toObject();
+    if (!needCreateNftItem)
+      nftItem = (
+        await this.model.create({
+          userAddress,
+          gameItemId,
+        })
+      ).toObject();
 
     const { gameOwnerKeyPair: owner, provider } = this.treasuryGetterService;
 
@@ -135,7 +146,14 @@ export class NftRegisterService {
         {
           _id: nftItem.id,
         },
-        { $set: { metadata: JSON.stringify(metadata), localImagePath, gameItemName: gameItem.itemName } },
+        {
+          $set: {
+            metadata: JSON.stringify(metadata),
+            localImagePath,
+            gameItemName: gameItem.itemName,
+            status: NftItemStatus.MetadataUploading,
+          },
+        },
       );
 
       return {
@@ -155,6 +173,8 @@ export class NftRegisterService {
       console.error('===== createTxForArweavePayment =====', error);
       await this.model.findByIdAndDelete(nftItem.id);
       throw error;
+    } finally {
+      fsPromises.rm(localImagePath);
     }
   }
 
@@ -182,10 +202,8 @@ export class NftRegisterService {
       {
         _id: nftItemId,
       },
-      { $set: { metadataLink, address: nftItemAddress, status: NftItemStatus.Minting } },
+      { $set: { metadataLink, address: nftItemAddress, status: NftItemStatus.Minting, arweaveUploadTxId } },
     );
-
-    fsPromises.rm(nftItem.localImagePath);
 
     return { serializedTx };
   }
@@ -193,12 +211,18 @@ export class NftRegisterService {
   async _uploadToArweave(arweaveUploadTxId: string, nftItem: NftItem) {
     const imageExt = this._getImageExtension(nftItem.localImagePath);
 
+    const { localImagePath } = await this._downloadImageToTmpFolder(
+      nftItem.gameItemImage,
+      nftItem.userAddress,
+      nftItem.gameItemId,
+    );
+
     const formData = new FormData();
     formData.append('transaction', arweaveUploadTxId);
     formData.append('env', this.configService.blockchain.env);
     formData.append(
       'file[]',
-      fs.createReadStream(nftItem.localImagePath) as any,
+      fs.createReadStream(localImagePath) as any,
       {
         filename: `0.${imageExt}`,
         contentType: mimeTypes.lookup(imageExt),
@@ -215,6 +239,8 @@ export class NftRegisterService {
     );
 
     if (result.error) console.error(result.error);
+
+    await fsPromises.rm(localImagePath);
 
     const metadataFile = result.messages?.find((m) => m.filename === 'manifest.json');
     // const imageFile = result.messages?.find((m) => m.filename === `0.${imageExt}`);
