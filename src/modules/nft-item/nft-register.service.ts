@@ -82,7 +82,7 @@ export class NftRegisterService {
 
     const imageMimeType = mimeTypes.lookup(imageExt);
     if (!imageMimeType) {
-      throw new BadRequestException();
+      throw new BadRequestException('MIME_TYPE_NOT_FOUND');
     }
 
     if (needCreateNftItem)
@@ -210,9 +210,7 @@ export class NftRegisterService {
   }
 
   async _uploadToArweave(arweaveUploadTxId: string, nftItem: NftItem) {
-    const imageExt = this._getImageExtension(nftItem.localImagePath);
-
-    const { localImagePath } = await this._downloadImageToTmpFolder(
+    const { localImagePath, imageExt } = await this._downloadImageToTmpFolder(
       nftItem.gameItemImage,
       nftItem.userAddress,
       nftItem.gameItemId,
@@ -418,6 +416,7 @@ export class NftRegisterService {
   }
 
   _getImageExtension(imageUrl: string) {
-    return path.extname(path.basename(imageUrl));
+    const res = RegExp(/((\.png)|(\.gif)|(\.jpeg)|(\.jpg))/g).exec(imageUrl);
+    return res.length ? res[0] : null;
   }
 }
