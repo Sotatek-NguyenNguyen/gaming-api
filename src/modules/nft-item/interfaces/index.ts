@@ -1,3 +1,5 @@
+import { NftItemStatus } from '../enum';
+
 export interface INftFilter {
   page: number;
 
@@ -8,4 +10,6 @@ export interface INftFilter {
   address?: string;
 
   gameItemId?: string;
+
+  status?: NftItemStatus;
 }

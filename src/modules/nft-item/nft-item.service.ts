@@ -42,7 +42,7 @@ export class NftItemService {
     return this.model.findOne({ address: address }).lean({ virtuals: true });
   }
 
-  _genQueryFromRequestFilter({ userAddress, address, gameItemId }: INftFilter) {
+  _genQueryFromRequestFilter({ userAddress, address, gameItemId, status }: INftFilter) {
     const query: FilterQuery<NftItemDocument> = {};
 
     if (userAddress) {
@@ -55,6 +55,10 @@ export class NftItemService {
 
     if (gameItemId) {
       query.gameItemId = gameItemId;
+    }
+
+    if (status) {
+      query.status = status;
     }
 
     return query;

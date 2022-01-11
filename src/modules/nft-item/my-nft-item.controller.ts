@@ -10,6 +10,7 @@ import {
   MintNftItemResponse,
 } from './dto';
 import { NftItemResponse } from './dto/nft-item.response.dto';
+import { NftItemStatus } from './enum';
 import { NftItem } from './nft-item.schema';
 import { NftItemService } from './nft-item.service';
 import { NftRegisterService } from './nft-register.service';
@@ -30,7 +31,7 @@ export class MyNftItemController {
   })
   @UseInterceptors(MapListInterceptor(NftItemResponse, NftItem))
   getMyNftItem(@Query() query: ListCurrentUserNftQuery, @GetUser('address') userAddress: string) {
-    return this.nftItemService.list({ userAddress, ...query });
+    return this.nftItemService.list({ ...query, userAddress, status: NftItemStatus.Minted });
   }
 
   @Post('/mint/arweave-upload')
