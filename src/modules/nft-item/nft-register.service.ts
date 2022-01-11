@@ -85,7 +85,7 @@ export class NftRegisterService {
       throw new BadRequestException();
     }
 
-    if (!needCreateNftItem)
+    if (needCreateNftItem)
       nftItem = (
         await this.model.create({
           userAddress,
