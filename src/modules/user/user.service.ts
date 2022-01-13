@@ -81,7 +81,6 @@ export class UserService {
           },
           sz: 14,
           bold: true,
-          underline: true,
         },
       },
       cellWhite: {
@@ -91,64 +90,32 @@ export class UserService {
           },
         },
       },
-      cellRed: {
-        fill: {
-          fgColor: {
-            rgb: 'FF0000',
-          },
-        },
-      },
-      cellGreen: {
-        fill: {
-          fgColor: {
-            rgb: 'FF00FF00',
-          },
-        },
-      },
     };
 
     const heading = [[{ value: 'List User', style: styles.headerDark }]];
 
     const specification = {
-      id: {
-        displayName: '_id',
-        headerStyle: styles.headerDark,
-        cellStyle: styles.cellWhite,
-        width: 200,
-      },
-      createdAt: {
-        displayName: 'createdAt',
-        headerStyle: styles.headerDark,
-        cellStyle: styles.cellGreen,
-        width: 120,
-      },
-      updatedAt: {
-        displayName: 'updatedAt',
-        headerStyle: styles.headerDark,
-        cellStyle: styles.cellGreen,
-        width: 120,
-      },
       address: {
-        displayName: 'address',
+        displayName: 'Address',
         headerStyle: styles.headerDark,
         cellStyle: styles.cellWhite,
         width: 320,
       },
-      accountInGameId: {
-        displayName: 'accountInGameId',
+      balance: {
+        displayName: 'Balance',
         headerStyle: styles.headerDark,
         cellStyle: styles.cellWhite,
-        width: 200,
-      },
-      balance: {
-        displayName: 'balance',
-        headerStyle: styles.headerDark,
-        cellStyle: styles.cellRed,
         width: 100,
+      },
+      createdAt: {
+        displayName: 'Created on',
+        headerStyle: styles.headerDark,
+        cellStyle: styles.cellWhite,
+        width: 120,
       },
     };
 
-    const merges = [{ start: { row: 1, column: 1 }, end: { row: 1, column: 6 } }];
+    const merges = [{ start: { row: 1, column: 1 }, end: { row: 1, column: 4 } }];
 
     const sheet = [];
     const query: FilterQuery<UserDocument> = {};
