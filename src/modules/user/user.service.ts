@@ -433,12 +433,16 @@ export class UserService {
     { amount, userAddress, note }: AdminGrantTokenRequest,
     type: BalanceChangeType.AdminGrant | BalanceChangeType.AdminDeduct,
   ): Promise<SuccessResponseDto> {
-    await this.checkUserExistByAddress(userAddress);
+    const user = await this.checkUserExistByAddress(userAddress);
+
+    if (type === BalanceChangeType.AdminDeduct && user.balance < amount) {
+      throw new BadRequestException('CANT_DEDUCT_AMOUNT_GREATER_THAN_BALANCE');
+    }
 
     const session = await this.model.startSession();
 
-    await session.withTransaction(() =>
-      Promise.all([
+    await session.withTransaction(async () => {
+      const [user] = await Promise.all([
         this.model.findOneAndUpdate(
           { address: userAddress },
           {
@@ -446,7 +450,7 @@ export class UserService {
               balance: type === BalanceChangeType.AdminGrant ? amount : -amount,
             },
           },
-          { session },
+          { session, new: true },
         ),
         this.balanceChangeService.insertMany(
           [
@@ -459,8 +463,12 @@ export class UserService {
           ],
           { session },
         ),
-      ]),
-    );
+      ]);
+
+      if (type === BalanceChangeType.AdminDeduct && user.balance < 0) {
+        throw new BadRequestException('CANT_DEDUCT_AMOUNT_GREATER_THAN_BALANCE');
+      }
+    });
 
     await session.endSession();
 
