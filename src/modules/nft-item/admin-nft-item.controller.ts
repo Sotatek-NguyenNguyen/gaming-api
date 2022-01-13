@@ -4,6 +4,7 @@ import { UserRole } from 'src/common/constant';
 import { Authorize, MapListInterceptor } from 'src/decorators';
 import { ListNftQuery, ListNftResponse } from './dto';
 import { NftItemResponse } from './dto/nft-item.response.dto';
+import { NftItemStatus } from './enum';
 import { NftItem } from './nft-item.schema';
 import { NftItemService } from './nft-item.service';
 
@@ -24,6 +25,6 @@ export class AdminNftItemController {
   })
   @UseInterceptors(MapListInterceptor(NftItemResponse, NftItem))
   getNftItemByUserId(@Query() query: ListNftQuery) {
-    return this.nftItemService.list(query);
+    return this.nftItemService.list({ ...query, status: NftItemStatus.Minted });
   }
 }
