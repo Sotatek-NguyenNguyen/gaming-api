@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from 'src/common/constant';
 import { IJwtPayload } from 'src/common/interfaces';
 import nacl from 'tweetnacl';
 import { UserService } from '../user/user.service';
@@ -26,6 +27,10 @@ export class AuthService {
     const { address, signature } = dto;
 
     const user = await this.userService.checkUserExistByAddress(address);
+
+    if (user.role !== UserRole.Player) {
+      throw new ForbiddenException('ONLY_ROLE_USER_ALLOWED');
+    }
 
     this.validateSignature({ nonce: user.nonce, signature, address });
 
