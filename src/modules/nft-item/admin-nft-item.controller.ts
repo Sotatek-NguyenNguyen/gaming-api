@@ -15,7 +15,6 @@ export class AdminNftItemController {
   constructor(readonly nftItemService: NftItemService) {}
 
   @Get('users/nft')
-  @Authorize()
   @ApiOperation({
     operationId: 'adminGetNftItems',
     description: 'Admin get nft items',
