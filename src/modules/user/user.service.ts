@@ -83,13 +83,6 @@ export class UserService {
           bold: true,
         },
       },
-      cellWhite: {
-        fill: {
-          fgColor: {
-            rgb: 'FFFFFF',
-          },
-        },
-      },
     };
 
     const heading = [[{ value: 'List User', style: styles.headerDark }]];
@@ -98,19 +91,19 @@ export class UserService {
       address: {
         displayName: 'Address',
         headerStyle: styles.headerDark,
-        cellStyle: styles.cellWhite,
+        cellStyle: {},
         width: 320,
       },
       balance: {
         displayName: 'Balance',
         headerStyle: styles.headerDark,
-        cellStyle: styles.cellWhite,
+        cellStyle: {},
         width: 100,
       },
       createdAt: {
         displayName: 'Created on',
         headerStyle: styles.headerDark,
-        cellStyle: styles.cellWhite,
+        cellStyle: {},
         width: 120,
       },
     };
