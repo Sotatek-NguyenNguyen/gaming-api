@@ -52,6 +52,17 @@ rs.initiate(
 
 ```
 
+## Deployment In Uat/Production
+```
+// Copy file .env.example to .env, change value
+
+// CREATE FILE.KEY FOR MONGO RS
+openssl rand -base64 700 > ./.docker/mongo/file.key
+chmod 400 file.key
+
+docker-compose -f docker-compose.prod.yml up -d
+```
+
 ## Conventions
 - Commit message must follow these rules: https://www.npmjs.com/package/@commitlint/config-conventional . Examples:
 ```

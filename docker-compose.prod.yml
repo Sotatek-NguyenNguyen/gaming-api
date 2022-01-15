@@ -1,0 +1,163 @@
+version: '3.7'
+
+networks:
+  gaming-uat-network:
+    driver: bridge
+
+volumes:
+  gaming_uat_redis_data: {}
+  gaming_uat_mongo1_rs_vol: {}
+  gaming_uat_mongo2_rs_vol: {}
+  gaming_uat_mongo3_rs_vol: {}
+
+services:
+  uat-gaming-api-service:
+    container_name: gaming-uat-gaming-api-service
+    # image: gamify-gaming-backend_gaming-service
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - gaming-uat-network
+    ports:
+      - 3004:3004
+    depends_on:
+      - uatmongo1
+    env_file:
+      - ./.env
+    environment:
+      MONGODB_URI: mongodb://admin:password@uatmongo1:27017,uatmongo2:27017,uatmongo3:27017/gamify-gaming?replicaSet=mongo-rs
+      REDIS_HOST: redis
+    restart: always
+
+  uat-gaming-treasury-event-service:
+    container_name: gaming-uat-treasury-event-service
+    # image: gamify-gaming-backend_gaming-service
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - gaming-uat-network
+    depends_on:
+      - uatmongo1
+    env_file:
+      - ./.env
+    environment:
+      MONGODB_URI: mongodb://admin:password@uatmongo1:27017,uatmongo2:27017,uatmongo3:27017/gamify-gaming?replicaSet=mongo-rs
+      REDIS_HOST: redis
+    restart: always
+    command: ['node', './dist/console.js', 'treasury-event']
+
+  uat-gaming-treasury-signature-service:
+    container_name: gaming-uat-treasury-signature-service
+    # image: gamify-gaming-backend_gaming-service
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - gaming-uat-network
+    depends_on:
+      - uatmongo1
+    env_file:
+      - ./.env
+    environment:
+      MONGODB_URI: mongodb://admin:password@uatmongo1:27017,uatmongo2:27017,uatmongo3:27017/gamify-gaming?replicaSet=mongo-rs
+      REDIS_HOST: redis
+    restart: always
+    command: ['node', './dist/console.js', 'treasury-signature']
+
+  uat-gaming-nft-scan-service:
+    container_name: gaming-uat-nft-scan-service
+    # image: gamify-gaming-backend_gaming-service
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - gaming-uat-network
+    depends_on:
+      - uatmongo1
+    env_file:
+      - ./.env
+    environment:
+      MONGODB_URI: mongodb://admin:password@uatmongo1:27017,uatmongo2:27017,uatmongo3:27017/gamify-gaming?replicaSet=mongo-rs
+      REDIS_HOST: redis
+    restart: always
+    command: ['node', './dist/console.js', 'nft-item-scan']
+
+  uatmongo1:
+    container_name: gaming-uat-mongo1
+    image: mongo:5.0.5
+    networks:
+      - gaming-uat-network
+    ports:
+      - 27019:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-gamify-gaming}
+      MONGO_INITDB_USERNAME: ${MONGO_INITDB_USERNAME:-admin}
+      MONGO_INITDB_PASSWORD: ${MONGO_INITDB_PASSWORD:-password}
+    volumes:
+      - gaming_uat_mongo1_rs_vol:/data/db
+      - ./.docker/mongo/initdb.d/:/docker-entrypoint-initdb.d/
+      - ./.docker/mongo/mongod.conf:/etc/mongod.conf
+      - ./.docker/mongo/file.key:/auth/file.key
+    restart: always
+    command: ["--bind_ip_all", "--replSet", "mongo-rs", "--keyFile", "/auth/file.key" ]
+
+  uatmongo2:
+    container_name: gaming-uat-mongo2
+    image: mongo:5.0.5
+    networks:
+      - gaming-uat-network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-gamify-gaming}
+    volumes:
+      - gaming_uat_mongo2_rs_vol:/data/db
+      - ./.docker/mongo/mongod.conf:/etc/mongod.conf
+      - ./.docker/mongo/file.key:/auth/file.key
+    restart: always
+    command: ["--bind_ip_all", "--replSet", "mongo-rs", "--keyFile", "/auth/file.key" ]
+
+  uatmongo3:
+    container_name: gaming-uat-mongo3
+    image: mongo:5.0.5
+    networks:
+      - gaming-uat-network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-gamify-gaming}
+    volumes:
+      - gaming_uat_mongo3_rs_vol:/data/db
+      - ./.docker/mongo/mongod.conf:/etc/mongod.conf
+      - ./.docker/mongo/file.key:/auth/file.key
+    restart: always
+    command: ["--bind_ip_all", "--replSet", "mongo-rs", "--keyFile", "/auth/file.key" ]
+
+  replica-setup:
+    image: mongo:5.0.5
+    container_name: gaming-uat-mongo-replica-setup
+    networks:
+      - gaming-uat-network
+    depends_on:
+      - uatmongo1
+      - uatmongo2
+      - uatmongo3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password}
+    volumes:
+      - ./.docker/mongo/rs-init.sh:/scripts/rs-init.sh
+    entrypoint: [ "bash", "/scripts/rs-init.sh" ]
+
+  redis:
+    container_name: gaming-uat-redis
+    image: redis:6-alpine
+    networks:
+      - gaming-uat-network
+    volumes:
+      - gaming_uat_redis_data:/data
+

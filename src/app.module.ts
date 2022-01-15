@@ -9,17 +9,16 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { GameServerApiIdempotentMiddleware, GameServerSignatureMiddleware } from './middleware';
 import { AuthModule } from './modules/auth/auth.module';
 import { BalanceChangeModule } from './modules/balance-change/balance-change.module';
-import { FakeDataModule } from './modules/fake-data/fake-data.module';
 import { GameInfoModule } from './modules/game-info/game-info.module';
 import { GameServerDummyModule } from './modules/game-server-dummy/gs-dummy.module';
 import { GsRequestHistoryModule } from './modules/gs-request-history/gs-request-history.module';
 import { NftItemModule } from './modules/nft-item/nft-item.module';
+import { OtpModule } from './modules/otp/otp.module';
 import { ApiConfigService } from './modules/shared/services';
 import { SharedModule } from './modules/shared/shared.module';
 import { TreasuryEventConsumerModule } from './modules/treasury-event-consumer/treasury-event-consumer.module';
 import { TreasuryModule } from './modules/treasury/treasury.module';
 import { UserModule } from './modules/user/user.module';
-import { OtpModule } from './modules/otp/otp.module';
 
 @Module({
   imports: [
@@ -61,7 +60,6 @@ import { OtpModule } from './modules/otp/otp.module';
     TreasuryEventConsumerModule,
     OtpModule,
     ScheduleModule.forRoot(),
-    process.env.NODE_ENV !== 'production' && FakeDataModule,
     process.env.NODE_ENV !== 'production' && GameServerDummyModule,
   ],
 })
