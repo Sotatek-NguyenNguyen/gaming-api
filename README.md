@@ -58,7 +58,7 @@ rs.initiate(
 
 // CREATE FILE.KEY FOR MONGO RS
 openssl rand -base64 700 > ./.docker/mongo/file.key
-chmod 400 file.key
+chmod 999:999 ./.docker/mongo/file.key
 
 docker-compose -f docker-compose.prod.yml up -d
 ```
