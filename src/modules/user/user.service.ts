@@ -115,6 +115,8 @@ export class UserService {
     const pageSize = 1000;
     let page = 1;
     let next_cursor;
+    const tenExpTokenDecimals = 10 ** this.treasuryGetterService.tokenDecimals;
+
     while (true) {
       const userData = await this.model.find(query).sort({ _id: -1 }).limit(pageSize).lean({ virtuals: true });
       sheet.push({
@@ -122,7 +124,10 @@ export class UserService {
         heading: heading,
         merges: merges,
         specification: specification,
-        data: userData,
+        data: userData.map((user) => ({
+          ...user,
+          balance: Math.floor((user.balance / tenExpTokenDecimals) * tenExpTokenDecimals) / tenExpTokenDecimals,
+        })),
       });
       if (!userData[pageSize - 1]) break;
       next_cursor = userData[pageSize - 1]._id;
