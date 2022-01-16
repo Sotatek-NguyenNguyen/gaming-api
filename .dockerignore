@@ -3,6 +3,7 @@ docker-compose.yml
 docker-compose-*.yml
 Dockerfile
 .dockerignore
+.docker
 
 scripts
 
