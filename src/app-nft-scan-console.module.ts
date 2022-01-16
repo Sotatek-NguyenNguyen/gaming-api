@@ -6,9 +6,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConsoleModule } from 'nestjs-console';
+import { NftItemConsoleModule } from './modules/nft-item/nft-item-console.module';
 import { ApiConfigService } from './modules/shared/services';
 import { SharedModule } from './modules/shared/shared.module';
-import { TreasuryEventModule } from './modules/treasury-event/treasury-event.module';
 
 @Module({
   imports: [
@@ -41,7 +41,7 @@ import { TreasuryEventModule } from './modules/treasury-event/treasury-event.mod
     }),
     SharedModule,
     ConsoleModule,
-    TreasuryEventModule,
+    NftItemConsoleModule,
   ],
 })
-export class AppConsoleModule {}
+export class AppNftScanConsoleModule {}

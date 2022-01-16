@@ -82,7 +82,7 @@ services:
       MONGODB_URI: mongodb://admin:password@uatmongo1:27017,uatmongo2:27017,uatmongo3:27017/gamify-gaming?replicaSet=mongo-rs
       REDIS_HOST: redis
     restart: always
-    command: ['node', './dist/console.js', 'nft-item-scan']
+    command: ['node', './dist/app-nft-scan-console.js', 'nft-item-scan']
 
   uatmongo1:
     container_name: gaming-uat-mongo1
