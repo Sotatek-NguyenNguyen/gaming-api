@@ -1,5 +1,5 @@
 import { QueueName, TimeToHours } from 'src/common/constant';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { set } from 'lodash';
 import { dayjs } from 'src/common/pkg/dayjs';
@@ -194,6 +194,89 @@ export class BalanceChangeService {
   }: ITreasuryDepositEventConsumerPayload) {
     const user = await this.userService.checkUserExistByAddress(userAddress);
     const isPlayer = user.role === UserRole.Player;
+    let balanceChangeType = this._getBcTypeFromTreasuryEvent(evtName, isPlayer);
+
+    console.log('==========', evtName, withdrawalId);
+
+    if (withdrawalId) {
+      const withdrawBc = await this.model
+        .findOne({
+          _id: withdrawalId,
+          userAddress,
+        })
+        .lean({ virtuals: true });
+
+      if (!withdrawBc) {
+        return;
+      }
+
+      balanceChangeType = withdrawBc.type;
+    }
+
+    const session = await this.model.startSession();
+
+    try {
+      await session.withTransaction(() =>
+        Promise.all([
+          withdrawalId
+            ? this.model.findOneAndUpdate(
+                {
+                  _id: withdrawalId,
+                },
+                {
+                  $set: {
+                    status: BalanceChangeStatus.Succeed,
+                    transactionId,
+                  },
+                },
+              )
+            : this.model.create(
+                [
+                  {
+                    userAddress,
+                    amount,
+                    transactionId,
+                    type: balanceChangeType,
+                  },
+                ],
+                { session },
+              ),
+          balanceChangeType === BalanceChangeType.Deposit &&
+            this.userService.bulkUpdateUserBalanceByAddress(
+              [
+                {
+                  address: userAddress,
+                  amount: +amount,
+                },
+              ],
+              session,
+            ),
+        ]),
+      );
+    } finally {
+      await session.endSession();
+    }
+
+    return {
+      notifyGameServer:
+        isPlayer && [BalanceChangeType.Deposit, BalanceChangeType.Withdrawn].includes(balanceChangeType),
+    };
+  }
+
+  async handleTreasuryDepositEvent2({
+    amount,
+    userAddress,
+    evtName,
+    transactionId,
+    withdrawalId,
+  }: ITreasuryDepositEventConsumerPayload) {
+    const user = await this.userService.getUserByAddress(userAddress);
+
+    if (evtName === TreasuryEventName.DepositEvent) {
+      if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    }
+
+    const isPlayer = user?.role === UserRole.Player;
     let balanceChangeType = this._getBcTypeFromTreasuryEvent(evtName, isPlayer);
 
     console.log('==========', evtName, withdrawalId);

@@ -15,7 +15,7 @@ export class DepositTreasuryHandlerConsumer {
     concurrency: NUMBER_CORE_CPUS,
   })
   async transcode({ data }: Job<ITreasuryDepositEventConsumerPayload>) {
-    const { notifyGameServer } = await this.balanceChangeService.handleTreasuryDepositEvent(data);
+    const { notifyGameServer } = await this.balanceChangeService.handleTreasuryDepositEvent2(data);
 
     if (notifyGameServer)
       await this.gsNotifyQueue.add(
