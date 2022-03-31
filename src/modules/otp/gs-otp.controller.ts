@@ -1,5 +1,5 @@
 import { MapInterceptor } from '@automapper/nestjs';
-import { Body, Controller, Get, Param, Post, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiHeaderGsPost } from 'src/decorators';
 import { GsAuthorize } from 'src/decorators/gs-authorize.decorator';

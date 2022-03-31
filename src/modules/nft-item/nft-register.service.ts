@@ -66,7 +66,7 @@ export class NftRegisterService {
     }
 
     const gameItem = await this.gsHelperService.validateGameItem(userAddress, gameItemId);
-
+    console.log('gameItem', gameItem);
     if (!gameItem) throw new NotFoundException('GAME_ITEM_NOT_FOUND');
 
     if (nftItem && nftItem.userAddress !== userAddress) {

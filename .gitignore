@@ -36,3 +36,9 @@ lerna-debug.log*
 
 # DOCKER
 /.docker/mongo/file.key
+/data/*
+/mongodb-osx-x86_64-4.0.12/*
+/mongo-init.js/*
+/data/
+/mongodb-osx-x86_64-4.0.12/
+/mongo-init.js/

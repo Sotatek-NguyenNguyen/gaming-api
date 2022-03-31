@@ -33,9 +33,14 @@ import {
   UserQuerySortBy,
   UserWithdrawRequest,
   UserWithdrawResponse,
+  UserOTPRequest,
+  UserOTPResponse,
+  UserLoginRequest,
+  UserLoginResponse,
 } from './dto';
 import { User, UserDocument } from './user.schema';
 import excel from 'node-excel-export';
+import { http } from 'src/common/http';
 
 @Injectable()
 export class UserService {
@@ -326,6 +331,71 @@ export class UserService {
         },
       );
 
+      throw error;
+    }
+  }
+
+  async userRequestOTP({ email }: UserOTPRequest): Promise<UserOTPResponse> {
+    email = email.trim();
+    const userExist = await this.model.findOne({ email: email });
+    if (userExist) {
+      return {
+        email: email,
+        status: -1,
+        message: 'This email has been used',
+      };
+    }
+
+    try {
+      let res;
+      await http
+        .post(this.configService.getGS.gameServer + '/auth/request-otp', { email: email })
+        .then(function (data) {
+          res = data;
+        });
+
+      return res;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async userLogin({ email, otp }: UserLoginRequest, userAddress: string): Promise<UserLoginResponse> {
+    email = email.trim();
+    const userExist = await this.model.findOne({ email: email });
+    if (userExist) {
+      return {
+        email: email,
+        status: -1,
+        message: 'This email has been used',
+      };
+    }
+
+    try {
+      let res;
+      await http
+        .post(this.configService.getGS.gameServer + '/auth/login', { email: email, otp: otp })
+        .then(function (data) {
+          res = data;
+        });
+
+      if (res.status != -1) {
+        await this.model.findOneAndUpdate(
+          { address: userAddress },
+          {
+            email: email,
+            accountInGameId: res.userId,
+          },
+          { new: true },
+        );
+        // console.log("res", res);
+        // console.log("userAddress ", userAddress);
+        // console.log("accountInGameId ", user.accountInGameId);
+        // console.log("email ", user.email);
+      }
+
+      return res;
+    } catch (error) {
       throw error;
     }
   }

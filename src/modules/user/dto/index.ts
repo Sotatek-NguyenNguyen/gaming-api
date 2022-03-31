@@ -8,3 +8,7 @@ export * from './admin-grant-token.request.dto';
 export * from './game-balance.response.dto';
 export * from './admin-withdraw.request.dto';
 export * from './admin-withdraw.response.dto';
+export * from './user-requestotp.request.dto';
+export * from './user-requestotp.response.dto';
+export * from './user-login.request.dto';
+export * from './user-login.response.dto';

@@ -1,14 +1,25 @@
-version: '3.7'
-
-volumes:
-  redis_data: {}
-  mongo_data: {}
+version: '3.1'
 
 services:
+  mongo:
+    image: mongo
+    ports:
+      - "27018:27017"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 1
+      MONGO_INITDB_USERNAME: admin
+      MONGO_INITDB_PASSWORD: 1
+      MONGO_INITDB_DATABASE: gaming
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ~/mongo_data:/data/db
+
   # Redis
   redis:
     image: redis:6-alpine
     ports:
-      - ${REDIS_PORT:-6379}:6379
+      - 6380:6379
     volumes:
-      - redis_data:/data
+      - ~/redis_data:/data

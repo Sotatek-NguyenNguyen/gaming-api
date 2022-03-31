@@ -18,6 +18,10 @@ export class User extends BaseMongo {
   @AutoMap()
   accountInGameId?: string;
 
+  @Prop({})
+  @AutoMap()
+  email?: string;
+
   @Prop({ enum: UserRole, default: UserRole.Player })
   role?: UserRole;
 

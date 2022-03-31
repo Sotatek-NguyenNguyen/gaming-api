@@ -132,4 +132,10 @@ export class ApiConfigService {
       address: this.getString('MINT_TOKEN_ADDRESS'),
     };
   }
+
+  get getGS() {
+    return {
+      gameServer: this.getString('GAME_SERVER_ENPOINT'),
+    };
+  }
 }
